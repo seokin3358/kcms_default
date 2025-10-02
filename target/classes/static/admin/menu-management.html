@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>메뉴 관리 - KITMS 관리자</title>
+    <link rel="icon" href="../images/ico.ico" type="image/x-icon">
+    <!-- 권한 체크 스크립트 -->
+    <script src="../common/admin-permission.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 사이드바는 공통 컴포넌트로 로드 */
+
+        /* 메인 콘텐츠 */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.sidebar-collapsed {
+            margin-left: 60px;
+        }
+
+        /* 모바일 반응형 */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.sidebar-collapsed {
+                margin-left: 0;
+            }
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        /* 메뉴 관리 콘텐츠 */
+        .content-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .content-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        /* 메뉴 트리 */
+        .menu-tree {
+            margin-bottom: 30px;
+        }
+
+        .menu-tree-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .menu-tree-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            cursor: pointer;
+        }
+
+        .menu-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .menu-icon {
+            font-size: 18px;
+        }
+
+        .menu-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .menu-meta {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .menu-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .menu-children {
+            padding-left: 40px;
+            border-top: 1px solid #e9ecef;
+            background: white;
+            display: none;
+        }
+
+        .menu-children.expanded {
+            display: block;
+        }
+
+        .child-menu {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f3f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .child-menu:last-child {
+            border-bottom: none;
+        }
+
+        .child-menu-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .child-menu-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .child-menu-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .child-menu-meta {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .child-menu-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        /* 체크박스 스타일 */
+        .form-group label.checkbox-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 8px 0;
+        }
+
+        .form-group label.checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+            margin-bottom: 0;
+            cursor: pointer;
+            transform: scale(1.2);
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .content-card {
+                padding: 20px;
+            }
+
+            .menu-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .menu-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- 공통 사이드바 로드 -->
+        <div id="adminSidebarContainer"></div>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="main-content">
+            <header class="header">
+                <h1 class="header-title">메뉴 관리</h1>
+                <div class="user-info">
+                    <span class="user-name" id="headerUserName" data-username="${username}">관리자</span>
+                    <button class="logout-btn" onclick="logout()">로그아웃</button>
+                </div>
+            </header>
+
+            <div class="content-card">
+                <div class="content-header">
+                    <h2 class="content-title">메뉴 구조</h2>
+                    <button class="btn btn-primary" onclick="openModal('create')">새 메뉴 추가</button>
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+
+                <div class="menu-tree" id="menuTree">
+                    <div class="loading">메뉴를 불러오는 중...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 메뉴 작성/수정 모달 -->
+    <div id="menuModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">새 메뉴 추가</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <form id="menuForm">
+                <div class="form-group">
+                    <label for="parentId">상위 메뉴</label>
+                    <select id="parentId" name="parentId">
+                        <option value="">최상위 메뉴</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="menuName">메뉴명</label>
+                    <input type="text" id="menuName" name="menuName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="menuUrl">메뉴 URL</label>
+                    <input type="text" id="menuUrl" name="menuUrl" placeholder="/example">
+                </div>
+                
+                <div class="form-group">
+                    <label for="menuOrder">정렬 순서</label>
+                    <input type="number" id="menuOrder" name="menuOrder" min="1" value="1">
+                </div>
+                
+                <div class="form-group">
+                    <label for="menuDescription">메뉴 설명</label>
+                    <textarea id="menuDescription" name="menuDescription"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="useFlag" name="useFlag" checked> 사용 여부
+                    </label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">취소</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '/api';
+        let currentMenuNo = null;
+        let menuList = [];
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', function() {
+            initializeAdmin();
+        });
+
+        function initializeAdmin() {
+            // Spring Security 세션 기반 인증이므로 별도의 토큰 검증 불필요
+            // 사용자 정보는 서버에서 전달받은 정보 사용
+            const userNameElement = document.getElementById('headerUserName');
+            
+            if (userNameElement) {
+                // 서버에서 전달받은 사용자명이 있으면 사용, 없으면 기본값
+                const serverUserName = userNameElement.getAttribute('data-username');
+                
+                // ${username}이 치환되지 않은 경우, 서버에서 사용자명을 직접 가져오기
+                if (serverUserName && serverUserName !== '${username}') {
+                    userNameElement.textContent = serverUserName;
+                } else {
+                    // 서버에서 현재 사용자 정보 가져오기
+                    fetch('/api/kitms-users/current', {
+                        method: 'GET',
+                        credentials: 'include'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.statusCode === 200 && data.data) {
+                            const currentUser = data.data;
+                            userNameElement.textContent = currentUser.resultInfo.userName;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('사용자 정보 가져오기 오류:', error);
+                    });
+                }
+            }
+
+            // 메뉴 목록 로드
+            loadMenus();
+        }
+
+        async function loadMenus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitms-menus/all`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // 세션 쿠키 포함
+                });
+                
+                const data = await response.json();
+                
+                if (data.statusCode === 200) {
+                    menuList = data.data.list || [];
+                    displayMenus(menuList);
+                    updateParentMenuOptions(menuList);
+                } else {
+                    console.error('메뉴 API 오류:', data);
+                    showError('메뉴를 불러오는데 실패했습니다: ' + (data.message || '알 수 없는 오류'));
+                }
+            } catch (error) {
+                console.error('메뉴 로드 오류:', error);
+                showError('메뉴를 불러오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        function displayMenus(menus) {
+            const menuTree = document.getElementById('menuTree');
+            
+            if (!menus || menus.length === 0) {
+                menuTree.innerHTML = '<div class="loading">등록된 메뉴가 없습니다.</div>';
+                return;
+            }
+
+            // 최상위 메뉴만 필터링 (parentId가 null인 메뉴들)
+            const topMenus = menus.filter(menu => !menu.parentId || menu.parentId === 0);
+            
+            const menuHTML = topMenus.map(menu => {
+                const children = menus.filter(child => child.parentId === menu.menuId);
+                return createMenuHTML(menu, children, menus);
+            }).join('');
+
+            menuTree.innerHTML = menuHTML;
+        }
+
+        function createMenuHTML(menu, children, allMenus) {
+            const hasChildren = children.length > 0;
+            const childrenHTML = hasChildren ? children.map(child => {
+                return `
+                    <div class="child-menu">
+                        <div class="child-menu-info">
+                            <span class="menu-icon">📄</span>
+                            <div class="child-menu-details">
+                                <div class="child-menu-name">${child.menuName}</div>
+                                <div class="child-menu-meta">
+                                    URL: ${child.menuUrl || 'N/A'} | 순서: ${child.sortOrder} | 
+                                    상태: ${child.isActive === 'Y' ? '사용' : '미사용'}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="child-menu-actions">
+                            <button class="btn btn-warning btn-sm" onclick="editMenu(${child.menuId})">수정</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteMenu(${child.menuId})">삭제</button>
+                        </div>
+                    </div>
+                `;
+            }).join('') : '';
+
+            return `
+                <div class="menu-tree-item">
+                    <div class="menu-header" onclick="toggleMenu(${menu.menuId})">
+                        <div class="menu-info">
+                            <span class="menu-icon">${hasChildren ? '📁' : '📄'}</span>
+                            <div class="menu-details">
+                                <div class="menu-name">${menu.menuName}</div>
+                                <div class="menu-meta">
+                                    URL: ${menu.menuUrl || 'N/A'} | 순서: ${menu.sortOrder} | 
+                                    상태: ${menu.isActive === 'Y' ? '사용' : '미사용'}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-actions">
+                            <button class="btn btn-success" onclick="event.stopPropagation(); addChildMenu(${menu.menuId})">하위 메뉴 추가</button>
+                            <button class="btn btn-warning" onclick="event.stopPropagation(); editMenu(${menu.menuId})">수정</button>
+                            <button class="btn btn-danger" onclick="event.stopPropagation(); deleteMenu(${menu.menuId})">삭제</button>
+                        </div>
+
+                    </div>
+                    ${hasChildren ? `<div class="menu-children" id="children-${menu.menuId}">${childrenHTML}</div>` : ''}
+                </div>
+            `;
+        }
+
+        function toggleMenu(menuId) {
+            const childrenDiv = document.getElementById(`children-${menuId}`);
+            if (childrenDiv) {
+                childrenDiv.classList.toggle('expanded');
+            }
+        }
+
+        function updateParentMenuOptions(menus) {
+            const parentSelect = document.getElementById('parentId');
+            const currentOptions = parentSelect.innerHTML;
+            
+            // 기존 옵션 유지하고 메뉴 추가
+            const menuOptions = menus
+                .filter(menu => menu.isActive === 'Y')
+                .map(menu => `<option value="${menu.menuId}">${menu.menuName}</option>`)
+                .join('');
+            
+            parentSelect.innerHTML = '<option value="">최상위 메뉴</option>' + menuOptions;
+        }
+
+        function openModal(mode, menuId = null, parentId = null) {
+            currentMenuNo = menuId;
+            const modal = document.getElementById('menuModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const form = document.getElementById('menuForm');
+            
+            if (mode === 'create') {
+                modalTitle.textContent = parentId ? '하위 메뉴 추가' : '새 메뉴 추가';
+                form.reset();
+                if (parentId) {
+                    document.getElementById('parentId').value = parentId;
+                }
+            } else if (mode === 'edit') {
+                modalTitle.textContent = '메뉴 수정';
+                loadMenuData(menuId);
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('menuModal').style.display = 'none';
+            currentMenuNo = null;
+        }
+
+        function addChildMenu(parentId) {
+            openModal('create', null, parentId);
+        }
+
+        async function loadMenuData(menuId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitms-menus/${menuId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // 세션 쿠키 포함
+                });
+                
+                const data = await response.json();
+                
+                if (data.statusCode === 200) {
+                    const menu = data.data.menu;
+                    document.getElementById('parentId').value = menu.parentId || '';
+                    document.getElementById('menuName').value = menu.menuName;
+                    document.getElementById('menuUrl').value = menu.menuUrl || '';
+                    document.getElementById('menuOrder').value = menu.sortOrder;
+                    document.getElementById('menuDescription').value = menu.menuDescription || '';
+                    document.getElementById('useFlag').checked = menu.isActive === 'Y';
+                } else {
+                    showError('메뉴 정보를 불러오는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('메뉴 데이터 로드 오류:', error);
+                showError('메뉴 정보를 불러오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        function editMenu(menuId) {
+            openModal('edit', menuId);
+        }
+
+        async function deleteMenu(menuId) {
+            if (!confirm('정말로 이 메뉴를 삭제하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitms-menus/${menuId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // 세션 쿠키 포함
+                });
+                
+                const data = await response.json();
+                
+                if (data.statusCode === 200) {
+                    showSuccess('메뉴가 삭제되었습니다.');
+                    loadMenus();
+                } else {
+                    showError('메뉴 삭제에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('메뉴 삭제 오류:', error);
+                showError('메뉴 삭제 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 폼 제출 처리
+        document.getElementById('menuForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const menuData = {
+                parentId: document.getElementById('parentId').value ? parseInt(document.getElementById('parentId').value) : null,
+                menuName: document.getElementById('menuName').value,
+                menuUrl: document.getElementById('menuUrl').value,
+                sortOrder: parseInt(document.getElementById('menuOrder').value),
+                menuDescription: document.getElementById('menuDescription').value,
+                isActive: document.getElementById('useFlag').checked ? 'Y' : 'N'
+            };
+
+            try {
+                const url = currentMenuNo 
+                    ? `${API_BASE_URL}/kitms-menus/${currentMenuNo}` // 수정
+                    : `${API_BASE_URL}/kitms-menus`; // 생성
+                
+                const method = currentMenuNo ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(menuData),
+                    credentials: 'include' // 세션 쿠키 포함
+                });
+                
+                const data = await response.json();
+                
+                if (data.statusCode === 200) {
+                    showSuccess(currentMenuNo ? '메뉴가 수정되었습니다.' : '메뉴가 추가되었습니다.');
+                    closeModal();
+                    loadMenus();
+                } else {
+                    showError(data.message || '메뉴 저장에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('메뉴 저장 오류:', error);
+                showError('메뉴 저장 중 오류가 발생했습니다.');
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function logout() {
+            // Spring Security 로그아웃 처리
+            window.location.href = '/admin/logout';
+        }
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('menuModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // 공통 사이드바 로드
+        async function loadAdminSidebar() {
+            try {
+                const response = await fetch('/admin/common/admin-sidebar.html');
+                if (response.ok) {
+                    const sidebarHTML = await response.text();
+                    const container = document.getElementById('adminSidebarContainer');
+                    if (container) {
+                        container.innerHTML = sidebarHTML;
+                        
+                        // 사이드바 로드 후 이벤트 리스너 등록
+                        setupSidebarEvents();
+                        
+                        // 메뉴 로드
+                        loadAdminMenus();
+                    } else {
+                        console.error('Admin sidebar container not found');
+                    }
+                } else {
+                    console.error('Failed to load admin sidebar, status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading admin sidebar:', error);
+            }
+        }
+
+        // 어드민 메뉴 로드
+        async function loadAdminMenus() {
+            try {
+                const response = await fetch(`${window.location.origin}/api/admin-menus/active`);
+                
+                if (response.ok) {
+                    const menus = await response.json();
+                    renderMenus(menus);
+                } else {
+                    console.error('Failed to load menus, status:', response.status);
+                    showMenuError('메뉴를 불러오는데 실패했습니다. (상태: ' + response.status + ')');
+                }
+            } catch (error) {
+                console.error('Error loading admin menus:', error);
+                showMenuError('메뉴를 불러오는 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 메뉴 렌더링
+        function renderMenus(menus) {
+            const menuContainer = document.getElementById('sidebarMenu');
+            
+            if (!menuContainer) {
+                console.error('Menu container not found!');
+                return;
+            }
+            
+            if (menus.length === 0) {
+                menuContainer.innerHTML = '<li class="loading">등록된 메뉴가 없습니다.</li>';
+                return;
+            }
+
+            menuContainer.innerHTML = menus.map(menu => `
+                <li class="menu-item">
+                    <a class="menu-link" 
+                       href="${menu.menuUrl || '#'}" 
+                       data-menu-id="${menu.menuNo}">
+                        <span class="menu-icon">${getMenuIcon(menu.menuIcon)}</span>
+                        <span class="menu-text">${menu.menuName}</span>
+                    </a>
+                </li>
+            `).join('');
+
+        }
+
+        // 메뉴 아이콘 매핑
+        function getMenuIcon(iconName) {
+            const iconMap = {
+                'dashboard': '📊',
+                'content_copy': '📄',
+                'people': '👥',
+                'settings': '⚙️',
+                'announcement': '📢',
+                'newspaper': '📰',
+                'menu': '📋',
+                'admin_panel_settings': '👤',
+                'tune': '🎛️',
+                'history': '📜'
+            };
+            return iconMap[iconName] || '📁';
+        }
+
+        // 메뉴 오류 표시
+        function showMenuError(message) {
+            const menuContainer = document.getElementById('sidebarMenu');
+            if (menuContainer) {
+                menuContainer.innerHTML = `<li class="loading">${message}</li>`;
+            }
+        }
+
+        // 사이드바 이벤트 설정
+        function setupSidebarEvents() {
+            // 사이드바 토글 이벤트
+            const toggleBtn = document.querySelector('.sidebar-toggle');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    const sidebar = document.getElementById('adminSidebar');
+                    const mainContent = document.querySelector('.main-content');
+                    
+                    if (sidebar && mainContent) {
+                        sidebar.classList.toggle('collapsed');
+                        mainContent.classList.toggle('sidebar-collapsed');
+                    }
+                });
+            }
+        }
+
+        // 페이지 로드 시 사이드바 로드
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAdminSidebar();
+        });
+    </script>
+</body>
+</html>

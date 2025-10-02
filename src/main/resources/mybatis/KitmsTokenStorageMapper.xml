@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kone.kitms.mybatis.mapper.KitmsTokenStorageMapper">
+    <select id="getUserInfoForToken" parameterType="string" resultType="KitmsTokenUserVO">
+        select KU.USER_NO, KU.USER_ID, KU.USER_NAME,
+               KU.USER_TEL, KU.USER_MOBILE, KU.USER_EMAIL,
+               KU.FIRST_FLAG, KU.AUTH_CODE, KU.USER_PWD
+        FROM KITMS_USER KU
+        WHERE KU.ENABLE = 1
+        AND KU.USER_ID = #{userId}
+        LIMIT 1
+    </select>
+
+    <select id="getStorageToken" parameterType="string" resultType="KitmsTokenStorageVO">
+        SELECT USER_ID, USER_TOKEN
+        FROM KITMS_TOKEN_STORAGE
+        WHERE USER_ID = #{userId}
+        LIMIT 1
+    </select>
+
+    <insert id="insertStorageToken" parameterType="KitmsTokenStorageVO">
+        INSERT INTO KITMS_TOKEN_STORAGE (USER_ID, USER_TOKEN)
+        VALUES (#{userId}, #{userToken})
+    </insert>
+
+    <update id="updateStorageToken" parameterType="KitmsTokenStorageVO">
+        UPDATE KITMS_TOKEN_STORAGE
+        SET USER_TOKEN = #{userToken}
+        WHERE USER_ID = #{userId}
+    </update>
+
+    <delete id="deleteStorageToken" parameterType="string">
+        DELETE FROM KITMS_TOKEN_STORAGE
+        WHERE USER_ID = #{userId}
+    </delete>
+
+</mapper>
+

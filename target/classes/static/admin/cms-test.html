@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMS 컨텐츠 편집기</title>
+<meta name="description" content="CMS 컨텐츠 편집기">
+<meta name="keywords" content="CMS, 편집기, 케이원">
+
+<!-- CSS 파일들 -->
+<link rel="stylesheet" href="../style/splide.min.css">
+<link rel="stylesheet" href="../style/reset.css">
+<link rel="stylesheet" href="../style/common.css">
+<link rel="stylesheet" href="../style/sub01.css">
+<link rel="stylesheet" href="../style/sub02.css">
+<link rel="stylesheet" href="../style/sub03.css">
+<link rel="stylesheet" href="../style/sub04.css">
+<link rel="stylesheet" href="../style/swiper-bundle.min.css" />
+<link rel="stylesheet" href="../style/aos.css">
+<link rel="stylesheet" href="../style/mobile.css">
+<link rel="icon" href="../images/ico.ico" type="image/x-icon">
+
+<!-- CKEditor 5 Superbuild CDN -->
+<script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/super-build/ckeditor.js" 
+        onerror="console.error('CKEditor 5 Superbuild 스크립트 로드 실패')"></script>
+
+<style>
+/* 관리자 페이지 스타일 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.admin-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* 사이드바는 공통 컴포넌트로 로드 */
+
+/* 메인 콘텐츠 */
+.main-content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 20px;
+}
+
+.header {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-name {
+    font-size: 14px;
+    color: #666;
+}
+
+.logout-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: #c82333;
+}
+
+/* 테스트 페이지 전용 스타일 */
+.test-container {
+    margin: 0 auto;
+}
+
+.test-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.test-header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.test-header p {
+    font-size: 1.2em;
+    opacity: 0.9;
+}
+
+.test-section {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.test-section h2 {
+    color: #333;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.test-button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 5px;
+    transition: background 0.3s;
+}
+
+.test-button:hover {
+    background: #5a6fd8;
+}
+
+.test-button.secondary {
+    background: #6c757d;
+}
+
+.test-button.secondary:hover {
+    background: #5a6268;
+}
+
+.test-result {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 15px;
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+
+.test-form {
+    display: grid;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.test-form input, .test-form textarea {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.test-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+    }
+
+    .header {
+        padding: 15px 20px;
+    }
+
+    .test-container {
+        padding: 10px;
+    }
+    
+    /* 모바일에서 CKEditor 반응형 처리 */
+    .ck-editor__editable {
+        min-height: 200px;
+        font-size: 14px;
+    }
+    
+    .ck-editor__editable img {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    .ck-editor__editable table {
+        font-size: 12px;
+        max-width: 100% !important;
+    }
+    
+    .editor-container {
+        margin: 10px 0;
+    }
+}
+
+
+/* CKEditor 및 미리보기 스타일 */
+.editor-container {
+    margin: 20px 0;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* CKEditor 전체 컨테이너 반응형 처리 */
+.ck-editor {
+    max-width: 100% !important;
+}
+
+.ck-editor__main {
+    max-width: 100% !important;
+}
+
+.ck-editor__editable_inline {
+    max-width: 100% !important;
+}
+
+.ck-editor__editable {
+    min-height: 300px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-width: 100%;
+    overflow-x: auto;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+/* CKEditor 컨텐츠 내부 요소들의 반응형 처리 */
+.ck-editor__editable img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.ck-editor__editable table {
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    word-wrap: break-word !important;
+}
+
+.ck-editor__editable iframe {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.ck-editor__editable video {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.ck-editor__editable pre {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+}
+
+.ck-editor__editable div {
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+}
+
+.ck-editor__editable p {
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+}
+
+.preview-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.preview-modal-content {
+    background-color: #fefefe;
+    margin: 2% auto;
+    padding: 0;
+    border: none;
+    width: 95%;
+    height: 90%;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.preview-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.preview-header h3 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.preview-close {
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-close:hover {
+    opacity: 0.7;
+}
+
+.preview-iframe {
+    width: 100%;
+    height: calc(100% - 70px);
+    border: none;
+    background: white;
+}
+
+.preview-controls {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.preview-controls button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.preview-controls button:hover {
+    background: #5a6fd8;
+}
+
+.preview-controls button.secondary {
+    background: #6c757d;
+}
+
+.preview-controls button.secondary:hover {
+    background: #5a6268;
+}
+
+.content-editor-section {
+    background: white;
+    border-radius: 10px;
+    padding: 20px 30px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+</style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- 공통 사이드바 로드 -->
+        <div id="adminSidebarContainer"></div>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="main-content">
+            <header class="header">
+                <h1 class="header-title">CMS 컨텐츠 편집기</h1>
+                <div class="user-info">
+                    <span class="user-name" id="headerUserName">관리자</span>
+                    <button class="logout-btn" onclick="logout()">로그아웃</button>
+                </div>
+            </header>
+
+            <!-- 메인 컨텐츠 영역 -->
+            <div class="test-container">
+            
+            <!-- 컨텐츠 편집기 -->
+            <div class="content-editor-section">
+                <h2>✏️ CMS 컨텐츠 편집기</h2>
+                <p>에디터를 사용하여 컨텐츠를 편집하고 실시간으로 미리보기할 수 있습니다.</p>
+                
+                <div class="test-form">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                        <label style="font-weight: bold; color: #667eea; min-width: 100px;">페이지 선택:</label>
+                        <select id="editor-page-select" onchange="onPageSelect()" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
+                            <option value="">페이지를 선택하세요...</option>
+                        </select>
+                        <button class="test-button secondary" onclick="loadAllContents()" style="padding: 8px 15px; font-size: 12px;">목록 새로고침</button>
+                    </div>
+                    <input type="hidden" id="editor-page-code" value="">
+                    <input type="hidden" id="editor-page-title" value="">
+                    
+                    <div class="editor-container">
+                        <div style="margin-bottom: 10px;">                            
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <button class="test-button" onclick="savePreviewContent()" style="padding: 5px 10px; font-size: 12px; background: #ffc107; color: #000;">임시 저장</button>
+                                <button class="test-button secondary" onclick="applyPreviewContent()" style="padding: 5px 10px; font-size: 12px; background: #28a745; color: white;">최종 저장</button>
+                                <button class="test-button secondary" onclick="initializeCKEditor()" style="padding: 5px 10px; font-size: 12px; background: #6c757d; color: white;">에디터 재초기화</button>
+                            </div>
+                        </div>
+                        <div id="ckeditor-container" style="border: 1px solid #ddd; border-radius: 5px; min-height: 500px;"></div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="test-button secondary" onclick="previewContent()">실제 페이지 미리보기</button>
+                    <button class="test-button" onclick="previewSavedContent()" style="background: #17a2b8; color: white;">임시 저장된 내용 미리보기</button>
+                    <button class="test-button secondary" onclick="openInNewTab()">새 탭에서 열기</button>
+                </div>
+                
+                <div id="editor-result" class="test-result" style="display: none; margin-top: 20px;"></div>
+            </div>
+            
+        </div>
+    </div>
+    
+    <!-- 미리보기 모달 -->
+    <div id="preview-modal" class="preview-modal">
+        <div class="preview-modal-content">
+            <div class="preview-header">
+                <h3>CMS 페이지 미리보기</h3>
+                <button class="preview-close" onclick="closePreviewModal()">&times;</button>
+            </div>
+            <iframe id="preview-iframe" class="preview-iframe" src="about:blank"></iframe>
+            <div class="preview-controls">
+                <button onclick="refreshPreview()">새로고침</button>
+                <button onclick="openPreviewInNewTab()">새 탭에서 열기</button>
+                <button class="secondary" onclick="closePreviewModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript 파일들 -->
+    <script src="../js/swiper-bundle.min.js"></script>
+    <script src="../js/splide.min.js"></script>
+    <script src="../js/aos.js"></script>
+    <script src="../js/gsap.min.js"></script>
+    <script src="../js/ScrollTrigger.min.js"></script>
+    //<script src="../js/common.js"></script>
+    
+    <!-- 권한 체크 스크립트 -->
+    <script src="../common/admin-permission.js"></script>
+    
+    <!-- TOP 버튼 -->
+    <button id="toTopBtn" class="to-top"><span>↑</span> TOP</button>
+    
+    <script>
+        // 전역 변수
+        const API_BASE_URL = '/api';
+        let ckEditor = null;
+        let currentPageCode = '';
+        let currentPageTitle = '';
+        
+        // CKEditor 초기화
+        window.initializeCKEditor = async function() {
+            try {
+                const editorElement = document.querySelector('#ckeditor-container');
+                if (!editorElement) {
+                    console.error('CKEditor 컨테이너를 찾을 수 없습니다.');
+                    showEditorResult('CKEditor 컨테이너를 찾을 수 없습니다. 페이지를 새로고침해주세요.', 'error');
+                    return;
+                }
+                
+                // 컨테이너 요소가 유효한지 검증
+                if (!editorElement.nodeType || editorElement.nodeType !== 1) {
+                    console.error('유효하지 않은 컨테이너 요소입니다.');
+                    showEditorResult('유효하지 않은 컨테이너 요소입니다.', 'error');
+                    return;
+                }
+                
+                // 이미 초기화된 경우 제거
+                if (ckEditor) {
+                    try {
+                        await ckEditor.destroy();
+                    } catch (destroyError) {
+                        console.warn('기존 CKEditor 제거 중 오류:', destroyError);
+                    }
+                    ckEditor = null;
+                }
+                
+                // 컨테이너 내용 초기화 (안전하게)
+                try {
+                    editorElement.innerHTML = '';
+                } catch (innerHTMLError) {
+                    console.error('컨테이너 내용 초기화 실패:', innerHTMLError);
+                    showEditorResult('컨테이너 내용 초기화에 실패했습니다.', 'error');
+                    return;
+                }
+                
+                // Superbuild 방식으로 에디터 초기화
+                await waitForSuperbuildAndInitialize();
+            } catch (error) {
+                console.error('CKEditor 초기화 실패:', error);
+                showEditorResult('CKEditor 초기화 실패: ' + error.message, 'error');
+            }
+        }
+
+        function waitForSuperbuildAndInitialize() {
+            let attempts = 0;
+            const maxAttempts = 100;
+
+            function checkAndInitialize() {
+                attempts++;
+                let foundEditor = null;
+
+                // ✅ 가장 먼저 super-build 전역 네임스페이스 확인
+                if (typeof CKEDITOR !== 'undefined' && CKEDITOR.ClassicEditor) {
+                    foundEditor = CKEDITOR.ClassicEditor;
+                }
+                else if (typeof ClassicEditor !== 'undefined') {
+                    foundEditor = ClassicEditor;
+                }
+                else if (typeof CKEditor5 !== 'undefined' && CKEditor5.ClassicEditor) {
+                    foundEditor = CKEditor5.ClassicEditor;
+                }
+                else if (window.ClassicEditor) {
+                    foundEditor = window.ClassicEditor;
+                }
+
+                if (foundEditor) {
+                    const editorElement = document.querySelector('#ckeditor-container');
+                    if (editorElement) {
+                        // 컨테이너가 DOM에 존재하고 보이는지 확인
+                        if (editorElement.offsetParent !== null) {
+                            initializeEditor(foundEditor, editorElement);
+                        } else {
+                            console.error('CKEditor 컨테이너가 보이지 않습니다.');
+                            showEditorResult('CKEditor 컨테이너가 보이지 않습니다.', 'error');
+                        }
+                    } else {
+                        console.error('CKEditor 컨테이너를 찾을 수 없습니다.');
+                        showEditorResult('CKEditor 컨테이너를 찾을 수 없습니다. 페이지를 새로고침해주세요.', 'error');
+                    }
+                } else if (attempts < maxAttempts) {
+                    setTimeout(checkAndInitialize, 100);
+                } else {
+                    console.error('CKEditor 5 Superbuild 로드 시간 초과');
+                    showEditorResult('에디터 로드에 실패했습니다. 페이지를 새로고침해주세요.', 'error');
+                }
+            }
+
+            checkAndInitialize();
+        }
+
+        function initializeEditor(editorClass = null, editorElement = null) {
+            if (!editorClass) {
+                if (typeof CKEDITOR !== 'undefined' && CKEDITOR.ClassicEditor) {
+                    editorClass = CKEDITOR.ClassicEditor; // ✅ 기본값
+                } else if (typeof ClassicEditor !== 'undefined') {
+                    editorClass = ClassicEditor;
+                } else if (typeof CKEditor5 !== 'undefined' && CKEditor5.ClassicEditor) {
+                    editorClass = CKEditor5.ClassicEditor;
+                } else if (window.ClassicEditor) {
+                    editorClass = window.ClassicEditor;
+                } else {
+                    console.error('CKEditor 5 Superbuild를 찾을 수 없습니다.');
+                    showEditorResult('CKEditor 5 Superbuild를 로드할 수 없습니다.', 'error');
+                    return Promise.reject(new Error('CKEditor not found'));
+                }
+            }
+
+            if (!editorElement) {
+                editorElement = document.querySelector('#ckeditor-container');
+                if (!editorElement) {
+                    console.error('CKEditor 컨테이너를 찾을 수 없습니다.');
+                    showEditorResult('에디터 컨테이너를 찾을 수 없습니다.', 'error');
+                    return Promise.reject(new Error('Editor container not found'));
+                }
+            }
+            
+            // 컨테이너 요소가 유효한지 추가 검증
+            if (!editorElement || !editorElement.nodeType || editorElement.nodeType !== 1) {
+                console.error('유효하지 않은 컨테이너 요소입니다.');
+                showEditorResult('유효하지 않은 컨테이너 요소입니다.', 'error');
+                return Promise.reject(new Error('Invalid container element'));
+            }
+
+            // ✅ 여기서 Promise를 반환해야 외부에서 .then() 사용 가능
+            return editorClass.create(editorElement, {
+                    // 반응형 설정
+                    ui: {
+                        viewportOffset: {
+                            top: 0,
+                            right: 0,
+                            bottom: 0,
+                            left: 0
+                        }
+                    },
+                    removePlugins: [
+                            // 협업/코멘트/트랙체인지/리비전/클라우드
+                            'Comments',
+                            'TrackChanges',
+                            'TrackChangesData',
+                            'RevisionHistory',
+                            'RealTimeCollaborativeComments',
+                            'RealTimeCollaborativeTrackChanges',
+                            'RealTimeCollaborativeRevisionHistory',
+                            'PresenceList',
+                            'CloudServices',
+
+                              // ✅ CKBox & EasyImage (CloudServices 의존)
+                            'CKBox', 'CKBoxEditing', 'CKBoxUI',
+                            'EasyImage',
+
+                            // 프리미엄/평가용 등
+                            'ExportPdf',
+                            'ExportWord',
+                            'WProofreader',
+                            'MathType',
+
+                              // ✅ 프리미엄: AI & Pagination
+                            'AIAssistant','AIAssistantUI','AIAssistantEditing','AIPrompt',
+                            'Pagination','PaginationEditing',
+
+                            // 기타 super-build에 섞여있는 것들
+                            'SlashCommand',
+                            'Template',
+                            'DocumentOutline',
+                            'FormatPainter',
+                            'TableOfContents',
+                            'PasteFromOfficeEnhanced',
+                            'CaseChange'
+
+                            
+                            ],
+                    toolbar: {
+                        items: [
+                        'heading','|',
+                        'bold','italic','underline','strikethrough','|',
+                        'fontSize','fontFamily','fontColor','fontBackgroundColor','|',
+                        'bulletedList','numberedList','|',
+                        'outdent','indent','|',
+                        'alignment','|',
+                        'link','uploadImage','insertTable','|',   // ✅ insertImage → uploadImage
+                        'blockQuote','codeBlock','|',
+                        'sourceEditing','|',  // ✅ HTML 소스 편집 탭 추가
+                        'undo','redo'
+                        ]
+                    },
+                    language: 'ko',
+                    image: {
+                    toolbar: [
+                        'imageTextAlternative','|',
+                        'imageStyle:alignLeft','imageStyle:alignCenter','imageStyle:alignRight'
+                    ]
+                    },
+                    table: {
+                    contentToolbar: [ 'tableColumn','tableRow','mergeTableCells' ]
+                    },
+                    simpleUpload: {
+                    uploadUrl: `${API_BASE_URL}/upload/image`,
+                    withCredentials: true
+                    },
+                    // ✅ Source Editing 플러그인 설정
+                    sourceEditing: {
+                        allowCollaborationFeatures: true,
+                        language: 'html'
+                    },
+                    // HTML 태그 표시 설정
+                    htmlSupport: {
+                        allow: [
+                            {
+                                name: 'div',
+                                attributes: true,
+                                classes: true,
+                                styles: true
+                            },
+                            {
+                                name: 'img',
+                                attributes: true,
+                                classes: true,
+                                styles: true
+                            }
+                        ]
+                    },
+                    // 이미지 설정
+                    image: {
+                        toolbar: [
+                            'imageTextAlternative','|',
+                            'imageStyle:alignLeft','imageStyle:alignCenter','imageStyle:alignRight'
+                        ],
+                        // 이미지 URL 변환 설정
+                        upload: {
+                            types: ['jpeg', 'jpg', 'png', 'gif', 'webp']
+                        }
+                    }
+                })
+                .then(newEditor => {
+                    ckEditor = newEditor;
+                
+                    // 에디터 내용 변경 시 실시간 미리보기 업데이트
+                    ckEditor.model.document.on('change:data', () => {
+                        // 미리보기 요소가 존재할 때만 업데이트
+                        if (document.getElementById('live-preview')) {
+                            updateLivePreview();
+                        }
+                        updateHtmlSource();
+                    });
+                
+                showEditorResult('에디터가 성공적으로 초기화되었습니다.', 'success');
+                
+                // 반응형 처리를 위한 이벤트 리스너 추가
+                setupResponsiveEditor();
+                    
+                    // 현재 선택된 페이지의 컨텐츠가 있다면 자동으로 로드
+                    const pageCode = document.getElementById('editor-page-code').value;
+                    if (pageCode && window.originalHtmlContent) {
+                        const convertedContent = convertImageUrls(window.originalHtmlContent);
+                        ckEditor.setData(convertedContent);
+                        showEditorResult('선택된 페이지의 컨텐츠가 에디터에 자동으로 로드되었습니다.', 'success');
+                    }
+                    
+                    return newEditor; // ✅ resolve 값 리턴
+                })
+                .catch(error => {
+                    console.error('CKEditor 5 Superbuild 초기화 오류:', error);
+                    showEditorResult('에디터 초기화에 실패했습니다.', 'error');
+                    throw error; // ✅ 에러 전파
+                });
+        }
+        
+        // 반응형 에디터 설정
+        function setupResponsiveEditor() {
+            if (!ckEditor) return;
+            
+            // 에디터 컨텐츠 변경 시 반응형 처리
+            ckEditor.model.document.on('change:data', () => {
+                setTimeout(() => {
+                    makeEditorContentResponsive();
+                }, 100);
+            });
+            
+            // 초기 반응형 처리
+            makeEditorContentResponsive();
+        }
+        
+        // 에디터 컨텐츠를 반응형으로 만들기
+        function makeEditorContentResponsive() {
+            if (!ckEditor) return;
+            
+            const editableElement = ckEditor.editing.view.document.getRoot();
+            if (!editableElement) return;
+            
+            // 에디터 내부의 모든 이미지 요소 처리
+            const images = editableElement.getChildren().filter(child => 
+                child.is('element') && child.name === 'img'
+            );
+            
+            images.forEach(img => {
+                const viewElement = ckEditor.editing.mapper.toViewElement(img);
+                if (viewElement) {
+                    viewElement.setStyle('max-width', '100%');
+                    viewElement.setStyle('height', 'auto');
+                }
+            });
+            
+            // 에디터 내부의 모든 테이블 요소 처리
+            const tables = editableElement.getChildren().filter(child => 
+                child.is('element') && child.name === 'table'
+            );
+            
+            tables.forEach(table => {
+                const viewElement = ckEditor.editing.mapper.toViewElement(table);
+                if (viewElement) {
+                    viewElement.setStyle('max-width', '100%');
+                    viewElement.setStyle('table-layout', 'fixed');
+                    viewElement.setStyle('word-wrap', 'break-word');
+                }
+            });
+            
+            // 에디터 내부의 모든 div 요소 처리
+            const divs = editableElement.getChildren().filter(child => 
+                child.is('element') && child.name === 'div'
+            );
+            
+            divs.forEach(div => {
+                const viewElement = ckEditor.editing.mapper.toViewElement(div);
+                if (viewElement) {
+                    viewElement.setStyle('max-width', '100%');
+                    viewElement.setStyle('word-wrap', 'break-word');
+                }
+            });
+        }
+        
+        
+        // 실시간 미리보기 업데이트
+        window.updateLivePreview = function() {
+            const previewDiv = document.getElementById('live-preview');
+            
+            // 미리보기 요소가 존재하지 않으면 함수 종료
+            if (!previewDiv) {
+                console.warn('live-preview 요소를 찾을 수 없습니다. 미리보기 기능을 건너뜁니다.');
+                return;
+            }
+            
+            // CKEditor에서 컨텐츠 가져오기
+            const mainHtml = ckEditor ? ckEditor.getData() : '';
+            
+            if (mainHtml.trim()) {
+                // CSS 스타일을 포함한 완전한 미리보기 생성
+                const styledHtml = `
+                    <div style="
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                    ">
+                        <div style="
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                            padding: 15px;
+                            border-radius: 8px;
+                            margin-bottom: 20px;
+                            text-align: center;
+                            font-size: 14px;
+                        ">
+                            📝 실시간 미리보기
+                        </div>
+                        <div style="
+                            background: white;
+                            padding: 20px;
+                            border-radius: 8px;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        ">
+                            ${mainHtml}
+                        </div>
+                    </div>
+                `;
+                previewDiv.innerHTML = styledHtml;
+            } else {
+                previewDiv.innerHTML = `
+                    <div style="
+                        text-align: center; 
+                        margin-top: 100px; 
+                        color: #6c757d;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    ">
+                        <div style="font-size: 48px; margin-bottom: 20px;">📝</div>
+                        <p>컨텐츠를 편집하면 여기에 미리보기가 표시됩니다.</p>
+                        <p style="font-size: 14px; margin-top: 10px;">편집 모드를 활성화하고 HTML을 입력해보세요.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // HTML 소스 코드 업데이트 (현재는 사용하지 않음)
+        window.updateHtmlSource = function() {
+            // HTML 소스 업데이트 기능은 현재 사용하지 않음
+            // 필요시 나중에 구현
+        }
+        
+        
+        
+        
+        
+        
+        // 임시 저장 (미리보기용)
+        window.savePreviewContent = async function() {
+            const pageCode = document.getElementById('editor-page-code').value;
+            const pageTitle = document.getElementById('editor-page-title').value;
+            
+            if (!pageCode || !pageTitle) {
+                showEditorResult('페이지 코드와 제목을 모두 입력해주세요.', 'error');
+                return;
+            }
+            
+            if (!ckEditor) {
+                showEditorResult('에디터가 초기화되지 않았습니다.', 'error');
+                return;
+            }
+            
+            const mainHtml = ckEditor.getData();
+            
+            if (!mainHtml.trim()) {
+                showEditorResult('저장할 HTML 내용이 없습니다.', 'error');
+                return;
+            }
+            
+            // 이미지 URL을 상대 경로로 변환하여 저장
+            const contentToSave = revertImageUrls(mainHtml);
+            
+            try {
+                const contentData = {
+                    pageTitle: pageTitle,
+                    pageContent: contentToSave,
+                    metaTitle: pageTitle,
+                    metaDescription: '',
+                    metaKeywords: '',
+                    status: 'ACTIVE',
+                    updatedBy: 'test-user'
+                };
+                
+                const response = await fetch(`/api/cms/content/preview/${pageCode}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(contentData)
+                });
+                
+                if (response.ok) {
+                    const savedContent = await response.json();
+                    
+                    // 저장 버튼 상태 초기화
+                    const saveButton = document.querySelector('[onclick="savePreviewContent()"]');
+                    saveButton.style.background = '#ffc107';
+                    saveButton.textContent = '임시 저장';
+                    
+                    // 백업 업데이트
+                    window.mainHtmlBackup = mainHtml;
+                    
+                    showEditorResult(`임시 저장이 완료되었습니다. "임시 저장된 내용 미리보기"로 확인하세요. (${savedContent.pageTitle})`, 'success');
+                } else {
+                    throw new Error('서버 오류: ' + response.status);
+                }
+            } catch (error) {
+                showEditorResult('임시 저장 실패: ' + error.message, 'error');
+            }
+        }
+        
+        // 최종 저장 (임시 저장된 내용을 실제 컨텐츠로 적용)
+        window.applyPreviewContent = async function() {
+            const pageCode = document.getElementById('editor-page-code').value;
+            
+            if (!pageCode.trim()) {
+                showEditorResult('페이지 코드를 입력해주세요.', 'error');
+                return;
+            }
+            
+            // 최종 저장 전 확인
+            const confirmApply = confirm(`임시 저장된 내용을 실제 페이지에 적용하시겠습니까?\n\n페이지 코드: ${pageCode}\n\n이 작업은 되돌릴 수 없습니다.`);
+            
+            if (!confirmApply) {
+                showEditorResult('최종 저장이 취소되었습니다.', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/cms/content/apply-preview/${pageCode}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const appliedContent = await response.json();
+                    
+                    // 원본 HTML 업데이트
+                    window.originalHtmlContent = appliedContent.pageContent;
+                    
+                    showEditorResult(`최종 저장이 완료되었습니다. 실제 페이지가 업데이트되었습니다. (${appliedContent.pageTitle})`, 'success');
+                } else {
+                    throw new Error('서버 오류: ' + response.status);
+                }
+            } catch (error) {
+                showEditorResult('최종 저장 실패: ' + error.message, 'error');
+            }
+        }
+        
+        // 메인 HTML을 CKEditor로 로드
+        
+        // 전체 컨텐츠 목록 조회
+        window.loadAllContents = async function() {
+            try {
+                showEditorResult('컨텐츠 목록을 불러오는 중...', 'info');
+                
+                const response = await fetch('/api/cms/contents');
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // API가 직접 배열을 반환하는지 확인
+                    const contents = Array.isArray(result) ? result : (result.data || []);
+                    
+                    const selectElement = document.getElementById('editor-page-select');
+                    selectElement.innerHTML = '<option value="">페이지를 선택하세요...</option>';
+                    
+                    if (contents.length === 0) {
+                        showEditorResult('등록된 컨텐츠가 없습니다.', 'warning');
+                        return;
+                    }
+                    
+                    contents.forEach(content => {
+                        const option = document.createElement('option');
+                        option.value = content.pageCode;
+                        option.textContent = `${content.pageCode} - ${content.pageTitle}`;
+                        option.setAttribute('data-page-title', content.pageTitle);
+                        selectElement.appendChild(option);
+                    });
+                    
+                    showEditorResult(`총 ${contents.length}개의 컨텐츠를 불러왔습니다.`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    console.error('API 오류 응답:', errorText);
+                    throw new Error(`서버 오류: ${response.status} - ${errorText}`);
+                }
+            } catch (error) {
+                console.error('컨텐츠 목록 조회 오류:', error);
+                showEditorResult('컨텐츠 목록 조회 실패: ' + error.message, 'error');
+            }
+        }
+        
+        // 드롭다운에서 페이지 선택 시 컨텐츠 로드
+        window.onPageSelect = function() {
+            const selectElement = document.getElementById('editor-page-select');
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            
+            
+            if (selectedOption.value) {
+                const pageCode = selectedOption.value;
+                const pageTitle = selectedOption.getAttribute('data-page-title');
+                
+                // 숨겨진 입력 필드에 값 설정
+                document.getElementById('editor-page-code').value = pageCode;
+                document.getElementById('editor-page-title').value = pageTitle;
+                
+                // 컨텐츠 자동 로드
+                loadContentForEdit();
+            } else {
+                // 선택 해제 시 초기화
+                document.getElementById('editor-page-code').value = '';
+                document.getElementById('editor-page-title').value = '';
+                if (ckEditor) {
+                    ckEditor.setData('');
+                }
+            }
+        }
+        
+        // page_content를 preview_content에 복사하여 초기화
+        window.initializePreviewContent = async function(pageCode, pageContent) {
+            try {
+                
+                const previewData = {
+                    pageCode: pageCode,
+                    previewContent: pageContent,
+                    updatedBy: 'system-init'
+                };
+                
+                const response = await fetch(`/api/cms/content/preview/${pageCode}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(previewData)
+                });
+                
+                if (response.ok) {
+                    showEditorResult('미리보기 컨텐츠가 초기화되었습니다.', 'success');
+                } else {
+                    console.warn('preview_content 초기화 실패:', response.status);
+                    // 실패해도 계속 진행 (필수 기능이 아니므로)
+                }
+            } catch (error) {
+                console.error('preview_content 초기화 오류:', error);
+                // 오류가 발생해도 계속 진행 (필수 기능이 아니므로)
+            }
+        }
+        
+        // 컨텐츠 불러오기
+        window.loadContentForEdit = async function() {
+            const pageCode = document.getElementById('editor-page-code').value;
+            const resultDiv = document.getElementById('editor-result');
+            
+            
+            if (!pageCode) {
+                showEditorResult('페이지 코드를 입력해주세요.', 'error');
+                return;
+            }
+            
+            try {
+                showEditorResult('컨텐츠를 불러오는 중...', 'info');
+                const response = await fetch(`/api/cms/content/${pageCode}`);
+                
+                if (response.ok) {
+                    const content = await response.json();
+                    
+                    // 원본 HTML 내용을 별도로 저장 (DB에서 가져온 그대로)
+                    window.originalHtmlContent = content.pageContent;
+                    
+                    // page_content를 preview_content에 복사하여 초기화
+                    await initializePreviewContent(pageCode, content.pageContent);
+                    
+                    // 이미지 URL을 절대 경로로 변환하여 에디터에 표시
+                    const convertedContent = convertImageUrls(content.pageContent);
+                    
+                    // 에디터에 컨텐츠 설정
+                    if (ckEditor) {
+                        ckEditor.setData(convertedContent);
+                    } else {
+                        // 에디터가 초기화되지 않은 경우 자동 초기화 후 컨텐츠 설정
+                        showEditorResult('에디터를 초기화하고 컨텐츠를 로드합니다...', 'info');
+                        try {
+                            await initializeCKEditor();
+                            // 초기화 완료 후 잠시 대기
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                    if (ckEditor) {
+                        ckEditor.setData(content.pageContent);
+                            }
+                        } catch (error) {
+                            console.error('에디터 자동 초기화 실패:', error);
+                            showEditorResult('에디터 자동 초기화에 실패했습니다. 수동으로 초기화해주세요.', 'error');
+                        }
+                    }
+                    
+                    // 페이지 정보 설정
+                    document.getElementById('editor-page-title').value = content.pageTitle;
+                    currentPageCode = content.pageCode;
+                    currentPageTitle = content.pageTitle;
+                    
+                    // HTML 코드 탭이 활성화되어 있다면 원본 HTML 표시 (제거된 기능이므로 주석 처리)
+                    // if (document.getElementById('code-panel').classList.contains('active')) {
+                    //     showBothHtml();
+                    // }
+                    
+                    showEditorResult(`컨텐츠를 성공적으로 불러왔습니다. (${content.pageTitle})`, 'success');
+                } else if (response.status === 404) {
+                    showEditorResult(`페이지 코드 '${pageCode}'에 해당하는 컨텐츠를 찾을 수 없습니다.`, 'error');
+                } else {
+                    const errorText = await response.text();
+                    console.error('API 오류 응답:', errorText);
+                    throw new Error(`서버 오류: ${response.status} - ${errorText}`);
+                }
+            } catch (error) {
+                console.error('컨텐츠 불러오기 오류:', error);
+                showEditorResult('컨텐츠 불러오기 실패: ' + error.message, 'error');
+            }
+        }
+        
+        // 컨텐츠 저장 (CKEditor용)
+        window.saveContent = async function() {
+            const pageCode = document.getElementById('editor-page-code').value;
+            const pageTitle = document.getElementById('editor-page-title').value;
+            const resultDiv = document.getElementById('editor-result');
+            
+            if (!pageCode || !pageTitle) {
+                showEditorResult('페이지 코드와 제목을 모두 입력해주세요.', 'error');
+                return;
+            }
+            
+            if (!ckEditor) {
+                showEditorResult('에디터가 초기화되지 않았습니다. 에디터 재초기화 버튼을 클릭해주세요.', 'error');
+                return;
+            }
+            
+            // CKEditor가 완전히 준비되었는지 확인
+            if (!ckEditor.model || !ckEditor.model.document) {
+                showEditorResult('에디터가 아직 완전히 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.', 'error');
+                return;
+            }
+            
+            const pageContent = ckEditor.getData();
+            
+            // 이미지 URL을 상대 경로로 변환하여 저장
+            const contentToSave = revertImageUrls(pageContent);
+            
+            try {
+                const contentData = {
+                    pageTitle: pageTitle,
+                    pageContent: contentToSave,
+                    status: 'ACTIVE',
+                    updatedBy: 'test-user'
+                };
+                
+                // 페이지 코드 기반 업데이트 API 사용
+                const response = await fetch(`/api/cms/content/page/${pageCode}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(contentData)
+                });
+                
+                if (response.ok) {
+                    const savedContent = await response.json();
+                    currentPageCode = savedContent.pageCode;
+                    currentPageTitle = savedContent.pageTitle;
+                    showEditorResult(`컨텐츠가 성공적으로 저장되었습니다. (${savedContent.pageTitle})`, 'success');
+                } else {
+                    throw new Error('서버 오류: ' + response.status);
+                }
+            } catch (error) {
+                showEditorResult('컨텐츠 저장 실패: ' + error.message, 'error');
+            }
+        }
+        
+        // 현재 편집 중인 내용 미리보기 (저장 전)
+        window.previewCurrentContent = function() {
+            const mainHtml = document.getElementById('main-html-editor').value;
+            const pageCode = document.getElementById('editor-page-code').value;
+            
+            if (!mainHtml.trim()) {
+                showEditorResult('미리보기할 내용이 없습니다.', 'error');
+                return;
+            }
+            
+            if (!pageCode.trim()) {
+                showEditorResult('페이지 코드를 입력해주세요.', 'error');
+                return;
+            }
+            
+            // cms-template.html을 기반으로 한 미리보기 URL 생성
+            const previewUrl = `/cms-template.html?page=${pageCode}&preview=true&content=${encodeURIComponent(mainHtml)}`;
+            
+            // 새 창에서 미리보기 열기
+            const previewWindow = window.open(previewUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+            
+            if (!previewWindow) {
+                showEditorResult('팝업이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.', 'error');
+                return;
+            }
+            
+            showEditorResult('현재 편집 내용이 실제 페이지와 동일한 형태로 미리보기됩니다.', 'success');
+        }
+        
+        // 임시 저장된 내용 미리보기
+        window.previewSavedContent = function() {
+            const pageCode = document.getElementById('editor-page-code').value;
+            
+            if (!pageCode.trim()) {
+                showEditorResult('페이지 코드를 입력해주세요.', 'error');
+                return;
+            }
+            
+            // 미리보기 모드로 cms-template.html 열기
+            const previewUrl = `/cms-template.html?page=${pageCode}&preview=true`;
+            
+            // 새 창에서 미리보기 열기
+            const previewWindow = window.open(previewUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+            
+            if (!previewWindow) {
+                showEditorResult('팝업이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.', 'error');
+                return;
+            }
+            
+            showEditorResult('임시 저장된 내용이 실제 페이지와 동일한 형태로 미리보기됩니다.', 'success');
+        }
+        
+        // 실제 페이지 미리보기 (저장된 내용)
+        window.previewContent = function() {
+            const pageCode = document.getElementById('editor-page-code').value;
+            if (!pageCode) {
+                showEditorResult('페이지 코드를 입력해주세요.', 'error');
+                return;
+            }
+            
+            const modal = document.getElementById('preview-modal');
+            const iframe = document.getElementById('preview-iframe');
+            
+            iframe.src = `/cms-template.html?page=${pageCode}`;
+            modal.style.display = 'block';
+            
+            showEditorResult('실제 페이지 미리보기가 열렸습니다.', 'success');
+        }
+        
+        // 미리보기 모달 닫기
+        window.closePreviewModal = function() {
+            const modal = document.getElementById('preview-modal');
+            modal.style.display = 'none';
+        }
+        
+        // 미리보기 새로고침
+        window.refreshPreview = function() {
+            const iframe = document.getElementById('preview-iframe');
+            iframe.src = iframe.src;
+        }
+        
+        // 새 탭에서 미리보기 열기
+        window.openPreviewInNewTab = function() {
+            const pageCode = document.getElementById('editor-page-code').value;
+            if (pageCode) {
+                window.open(`/cms-template.html?page=${pageCode}`, '_blank');
+            }
+        }
+        
+        // 새 탭에서 열기 (편집기에서)
+        window.openInNewTab = function() {
+            const pageCode = document.getElementById('editor-page-code').value;
+            if (pageCode) {
+                window.open(`/cms-template.html?page=${pageCode}`, '_blank');
+            } else {
+                showEditorResult('페이지 코드를 입력해주세요.', 'error');
+            }
+        }
+        
+        // 에디터 결과 표시
+        window.showEditorResult = function(message, type) {
+            const resultDiv = document.getElementById('editor-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = message;
+            
+            if (type === 'success') {
+                resultDiv.style.backgroundColor = '#d4edda';
+                resultDiv.style.borderColor = '#c3e6cb';
+                resultDiv.style.color = '#155724';
+            } else if (type === 'error') {
+                resultDiv.style.backgroundColor = '#f8d7da';
+                resultDiv.style.borderColor = '#f5c6cb';
+                resultDiv.style.color = '#721c24';
+            } else if (type === 'warning') {
+                resultDiv.style.backgroundColor = '#fff3cd';
+                resultDiv.style.borderColor = '#ffeaa7';
+                resultDiv.style.color = '#856404';
+            }
+        }
+        
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('preview-modal');
+            if (event.target === modal) {
+                closePreviewModal();
+            }
+        }
+        
+        // 테스트 함수들
+        
+        
+        
+        
+        // TOP 버튼 설정
+        window.setupTopButton = function() {
+            const topBtn = document.getElementById("toTopBtn");
+            
+            window.addEventListener("scroll", function () {
+                const showPoint = window.innerHeight * 1.2;
+                
+                if (window.scrollY > showPoint) {
+                    topBtn.classList.add("show");
+                } else {
+                    topBtn.classList.remove("show");
+                }
+            });
+            
+            topBtn.addEventListener("click", function () {
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+            });
+        }
+        
+        // 공통 사이드바 로드
+        async function loadAdminSidebar() {
+            try {
+                const response = await fetch('/admin/common/admin-sidebar.html');
+                if (response.ok) {
+                    const sidebarHTML = await response.text();
+                    const container = document.getElementById('adminSidebarContainer');
+                    if (container) {
+                        container.innerHTML = sidebarHTML;
+                        
+                        // 사이드바 로드 후 이벤트 리스너 등록
+                        setupSidebarEvents();
+                        
+                        // 메뉴 로드
+                        loadAdminMenus();
+                    } else {
+                        console.error('Admin sidebar container not found');
+                    }
+                } else {
+                    console.error('Failed to load admin sidebar, status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading admin sidebar:', error);
+            }
+        }
+
+        // 어드민 메뉴 로드 (권한 기반)
+        async function loadAdminMenus() {
+            try {
+                const response = await fetch(`${window.location.origin}/api/admin-menus/accessible`, {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const menus = await response.json();
+                    renderMenus(menus);
+                } else {
+                    console.error('Failed to load accessible menus, status:', response.status);
+                    showMenuError('메뉴를 불러오는데 실패했습니다. (상태: ' + response.status + ')');
+                }
+            } catch (error) {
+                console.error('Error loading accessible admin menus:', error);
+                showMenuError('메뉴를 불러오는 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 메뉴 렌더링
+        function renderMenus(menus) {
+            const menuContainer = document.getElementById('sidebarMenu');
+            
+            if (!menuContainer) {
+                console.error('Menu container not found!');
+                return;
+            }
+            
+            if (menus.length === 0) {
+                menuContainer.innerHTML = '<li class="loading">등록된 메뉴가 없습니다.</li>';
+                return;
+            }
+
+            menuContainer.innerHTML = menus.map(menu => `
+                <li class="menu-item">
+                    <a class="menu-link" 
+                       href="${menu.menuUrl || '#'}" 
+                       data-menu-id="${menu.menuNo}">
+                        <span class="menu-icon">${getMenuIcon(menu.menuIcon)}</span>
+                        <span class="menu-text">${menu.menuName}</span>
+                    </a>
+                </li>
+            `).join('');
+
+        }
+
+        // 메뉴 아이콘 매핑
+        function getMenuIcon(iconName) {
+            const iconMap = {
+                'dashboard': '📊',
+                'content_copy': '📄',
+                'people': '👥',
+                'settings': '⚙️',
+                'announcement': '📢',
+                'newspaper': '📰',
+                'menu': '📋',
+                'admin_panel_settings': '👤',
+                'tune': '🎛️',
+                'history': '📜'
+            };
+            return iconMap[iconName] || '📁';
+        }
+
+        // 메뉴 오류 표시
+        function showMenuError(message) {
+            const menuContainer = document.getElementById('sidebarMenu');
+            if (menuContainer) {
+                menuContainer.innerHTML = `<li class="loading">${message}</li>`;
+            }
+        }
+
+        // 사이드바 이벤트 설정
+        function setupSidebarEvents() {
+            // 사이드바 토글 이벤트
+            const toggleBtn = document.querySelector('.sidebar-toggle');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    const sidebar = document.getElementById('adminSidebar');
+                    const mainContent = document.querySelector('.main-content');
+                    
+                    if (sidebar && mainContent) {
+                        sidebar.classList.toggle('collapsed');
+                        mainContent.classList.toggle('sidebar-collapsed');
+                    }
+                });
+            }
+        }
+
+        // DOM 로드 완료 후 초기화
+        document.addEventListener("DOMContentLoaded", function () {
+            loadAdminSidebar(); // 사이드바 로드
+            setupTopButton();
+            initializeCKEditor();
+            loadAllContents(); // 컨텐츠 목록 자동 로드
+            loadUserInfo(); // 사용자 정보 로드
+            initializeAdmin();
+        });
+
+        // 사용자 정보 로드
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/account', {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const user = await response.json();
+                    const userNameElement = document.getElementById('headerUserName');
+                    if (userNameElement) {
+                        userNameElement.textContent = user.userName || '관리자';
+                    }
+                } else {
+                    console.error('Failed to load user info, status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading user info:', error);
+            }
+        }
+
+        // 로그아웃 함수
+        function logout() {
+            localStorage.removeItem('kitms_token');
+            localStorage.removeItem('admin_user');
+            window.location.href = '/admin/login';
+        }
+
+        function initializeAdmin() {
+            // 사용자 정보는 loadUserInfo()에서 처리하므로 여기서는 추가 작업만 수행
+        }
+        
+        // 이미지 URL 변환 함수 (상대 경로를 절대 경로로)
+        window.convertImageUrls = function(htmlContent) {
+            if (!htmlContent) return htmlContent;
+            
+            // 상대 경로 이미지를 절대 경로로 변환
+            return htmlContent.replace(
+                /src="\.\/images\//g, 
+                'src="/images/'
+            ).replace(
+                /src="images\//g, 
+                'src="/images/'
+            );
+        }
+        
+        // 이미지 URL 역변환 함수 (절대 경로를 상대 경로로)
+        window.revertImageUrls = function(htmlContent) {
+            if (!htmlContent) return htmlContent;
+            
+            // 절대 경로 이미지를 상대 경로로 변환
+            return htmlContent.replace(
+                /src="\/images\//g, 
+                'src="./images/'
+            );
+        }
+        
+        // 페이지 로드 시 자동으로 CKEditor 초기화
+        window.addEventListener('load', function() {
+            // DOM이 완전히 로드된 후 CKEditor 초기화
+            setTimeout(() => {
+                initializeCKEditor();
+            }, 500);
+        });
+    </script>
+            </div> <!-- test-container -->
+        </main> <!-- main-content -->
+    </div> <!-- admin-container -->
+</body>
+</html>

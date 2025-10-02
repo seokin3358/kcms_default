@@ -1,0 +1,49 @@
+.mo {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .pc {
+    display: none;
+  }
+  .mo {
+    display: block;
+  }
+  .header {
+    width: 100%;
+    height: 72px;
+    overflow: visible;
+    padding-top: 0;
+  }
+  .header .header-inner {
+    text-align: right;
+  }
+  .header .header-logo {
+    top: 12px;
+  }
+  .header .header-gnb {
+    display: none;
+  }
+  .header .mobile-gnb {
+    display: block;
+  }
+  .header .mobile-gnb .sidebar-btn span {
+    background-color: #fff;
+  }
+  body {
+    width: 100%;
+    min-width: auto;
+  }
+  .body {
+    width: 100%;
+  }
+  .body marto .centerbox {
+    width: 100%;
+  }
+  .centerbox {
+    width: 100%;
+  }
+  #header.bg--white .mobile-gnb .sidebar-btn span {
+    background-color: #222;
+  }
+}/*# sourceMappingURL=mobile.css.map */

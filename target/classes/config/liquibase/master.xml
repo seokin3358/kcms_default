@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <property name="now" value="now()" dbms="mariadb"/>
+    <property name="floatType" value="float" dbms="mariadb"/>
+    <property name="clobType" value="clob" dbms="mariadb"/>
+    <property name="blobType" value="longblob" dbms="mariadb"/>
+    <property name="uuidType" value="varchar(36)" dbms="mariadb"/>
+    <property name="datetimeType" value="datetime(6)" dbms="mariadb"/>
+
+    <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20240105045307_added_entity_KitmsUser.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20240105050007_added_entity_KitmsLoginLog.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20240105050907_added_entity_KitmsNotice.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20240105051007_added_entity_KitmsAttach.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20240105051107_added_entity_KitmsTokenStorage.xml" relativeToChangelogFile="false"/>
+</databaseChangeLog>

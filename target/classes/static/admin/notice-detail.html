@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공지사항 생성/수정 - KITMS 관리자</title>
+    <link rel="icon" href="../images/ico.ico" type="image/x-icon">
+    
+    <!-- 권한 체크 스크립트 -->
+    <script src="../common/admin-permission.js"></script>
+    
+    <!-- CKEditor 5 Superbuild CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/super-build/ckeditor.js" 
+            onerror="console.error('CKEditor 5 Superbuild 스크립트 로드 실패')"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 사이드바는 공통 컴포넌트로 로드 */
+
+        /* 메인 콘텐츠 */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.sidebar-collapsed {
+            margin-left: 60px;
+        }
+
+        /* 모바일 반응형 */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.sidebar-collapsed {
+                margin-left: 0;
+            }
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        /* 폼 컨테이너 */
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .form-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .form-checkbox label {
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* CKEditor 스타일 */
+        .editor-container {
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .ck-editor__editable {
+            min-height: 400px;
+        }
+
+        /* 첨부파일 스타일 */
+        .file-upload-container {
+            margin-top: 10px;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #e9ecef;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .file-upload-area:hover {
+            border-color: #007bff;
+            background: #f0f8ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+
+        .file-upload-content {
+            pointer-events: none;
+        }
+
+        .file-upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .file-upload-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .file-upload-hint {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            background: #e9ecef;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .file-icon {
+            font-size: 20px;
+            margin-right: 12px;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .file-action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .file-download-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .file-download-btn:hover {
+            background: #1e7e34;
+        }
+
+        .file-delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .file-delete-btn:hover {
+            background: #c82333;
+        }
+
+        /* 메시지 스타일 */
+        .message {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* 로딩 스타일 */
+        .loading {
+            display: none;
+            text-align: center;
+                padding: 20px;
+            }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- 공통 사이드바 로드 -->
+        <div id="adminSidebarContainer"></div>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="main-content">
+            <header class="header">
+                <h1 class="header-title" id="pageTitle">공지사항 생성</h1>
+                <div class="user-info">
+                    <span class="user-name" id="userName">관리자</span>
+                    <button class="logout-btn" onclick="logout()">로그아웃</button>
+                </div>
+            </header>
+
+            <!-- 메시지 영역 -->
+            <div id="messageArea"></div>
+
+            <!-- 로딩 영역 -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>처리 중...</p>
+            </div>
+
+            <!-- 폼 컨테이너 -->
+            <div class="form-container">
+                <div class="form-header">
+                    <h2 class="form-title" id="formTitle">공지사항 생성</h2>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="goBack()">
+                            목록으로
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="saveNotice()">
+                            저장
+                        </button>
+                        <button type="button" class="btn btn-danger" id="deleteBtn" onclick="deleteNotice()" style="display: none;">
+                            삭제
+                        </button>
+                    </div>
+                </div>
+
+                <form id="noticeForm">
+                    <input type="hidden" id="noticeNo" name="noticeNo">
+                    
+                    <div class="form-group">
+                        <label for="noticeTitle" class="form-label">제목 *</label>
+                        <input type="text" id="noticeTitle" name="noticeTitle" class="form-input" 
+                               placeholder="공지사항 제목을 입력하세요" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">내용 *</label>
+                        <div class="editor-container">
+                            <textarea id="noticeContent" name="noticeContent"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-checkbox">
+                            <input type="checkbox" id="staticFlag" name="staticFlag">
+                            <label for="staticFlag">상단 고정 공지사항으로 설정</label>
+                        </div>
+                    </div>
+
+                    <!-- 첨부파일 섹션 -->
+                    <div class="form-group">
+                        <label class="form-label">첨부파일</label>
+                        <div class="file-upload-container">
+                            <div class="file-upload-area" id="fileUploadArea">
+                                <div class="file-upload-content">
+                                    <span class="file-upload-icon">📁</span>
+                                    <p class="file-upload-text">파일을 드래그하거나 클릭하여 업로드하세요</p>
+                                    <p class="file-upload-hint">모든 파일 형식 지원 (최대 10MB)</p>
+                                </div>
+                                <input type="file" id="fileInput" multiple style="display: none;">
+                            </div>
+                            <div class="file-list" id="fileList"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE_URL = '/api';
+        let editor = null;
+        let isEditMode = false;
+        let currentNoticeNo = null;
+        let attachedFiles = []; // 첨부파일 목록
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', function() {
+            loadAdminSidebar();
+            initializePage();
+            initializeFileUpload();
+        });
+
+        // 공통 사이드바 로드
+        async function loadAdminSidebar() {
+            try {
+                const response = await fetch('/admin/common/admin-sidebar.html');
+                if (response.ok) {
+                    const sidebarHTML = await response.text();
+                    const container = document.getElementById('adminSidebarContainer');
+                    if (container) {
+                        container.innerHTML = sidebarHTML;
+                        
+                        // 사이드바 로드 후 이벤트 리스너 등록
+                        setupSidebarEvents();
+                    }
+                } else {
+                    console.error('Failed to load sidebar:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading sidebar:', error);
+            }
+        }
+
+        // 사이드바 이벤트 설정
+        function setupSidebarEvents() {
+            // 사이드바 토글 기능 등
+            
+            // 메뉴 로드
+            loadAdminMenus();
+        }
+
+        // 어드민 메뉴 로드
+        async function loadAdminMenus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin-menus/active`);
+                
+                if (response.ok) {
+                    const menus = await response.json();
+                    renderMenus(menus);
+                } else {
+                    console.error('Failed to load menus, status:', response.status);
+                    showError('메뉴를 불러오는데 실패했습니다. (상태: ' + response.status + ')');
+                }
+            } catch (error) {
+                console.error('Error loading admin menus:', error);
+                showError('메뉴를 불러오는 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 메뉴 렌더링
+        function renderMenus(menus) {
+            const menuContainer = document.getElementById('sidebarMenu');
+            
+            if (!menuContainer) {
+                console.error('Menu container not found!');
+                return;
+            }
+            
+            if (menus.length === 0) {
+                menuContainer.innerHTML = '<li class="loading">등록된 메뉴가 없습니다.</li>';
+                return;
+            }
+
+            menuContainer.innerHTML = menus.map(menu => `
+                <li class="menu-item">
+                    <a class="menu-link" 
+                       href="${menu.menuUrl || '#'}" 
+                       data-menu-id="${menu.menuNo}">
+                        <span class="menu-icon">${getMenuIcon(menu.menuIcon)}</span>
+                        <span class="menu-text">${menu.menuName}</span>
+                    </a>
+                </li>
+            `).join('');
+
+            // 메뉴 클릭 이벤트 추가
+            addMenuClickEvents();
+        }
+
+        // 메뉴 아이콘 매핑
+        function getMenuIcon(iconName) {
+            const iconMap = {
+                'dashboard': '📊',
+                'content_copy': '📄',
+                'people': '👥',
+                'settings': '⚙️',
+                'announcement': '📢',
+                'newspaper': '📰',
+                'menu': '📋',
+                'admin_panel_settings': '👤',
+                'tune': '🎛️',
+                'history': '📜'
+            };
+            return iconMap[iconName] || '📁';
+        }
+
+        // 메뉴 클릭 이벤트 추가
+        function addMenuClickEvents() {
+            document.querySelectorAll('.menu-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // URL이 있는 경우에만 페이지 이동
+                    if (this.getAttribute('href') && this.getAttribute('href') !== '#') {
+                        // 활성 메뉴 설정
+                        setActiveMenuItem(this);
+                        
+                        // 페이지 이동
+                        window.location.href = this.getAttribute('href');
+                    }
+                });
+            });
+        }
+
+        // 활성 메뉴 설정
+        function setActiveMenuItem(activeLink) {
+            // 모든 활성 클래스 제거
+            document.querySelectorAll('.menu-link.active').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // 현재 링크에 활성 클래스 추가
+            activeLink.classList.add('active');
+        }
+
+        // 오류 메시지 표시
+        function showError(message) {
+            const menuContainer = document.getElementById('sidebarMenu');
+            if (menuContainer) {
+                menuContainer.innerHTML = `<li class="loading">${message}</li>`;
+            }
+        }
+
+        function initializePage() {
+            // URL 파라미터 확인
+            const urlParams = new URLSearchParams(window.location.search);
+            const noticeNo = urlParams.get('noticeNo');
+            
+            if (noticeNo) {
+                // 수정 모드
+                isEditMode = true;
+                currentNoticeNo = noticeNo;
+                loadNoticeData(noticeNo);
+                document.getElementById('pageTitle').textContent = '공지사항 수정';
+                document.getElementById('formTitle').textContent = '공지사항 수정';
+                // 삭제 버튼 표시
+                document.getElementById('deleteBtn').style.display = 'inline-block';
+            } else {
+                // 생성 모드
+                isEditMode = false;
+                // 삭제 버튼 숨김
+                document.getElementById('deleteBtn').style.display = 'none';
+                // CKEditor 초기화
+                waitForSuperbuildAndInitialize();
+            }
+        }
+
+        function waitForSuperbuildAndInitialize() {
+            let attempts = 0;
+            const maxAttempts = 100;
+
+            function checkAndInitialize() {
+                attempts++;
+                let foundEditor = null;
+
+                // 여러 가능한 CKEditor 네임스페이스 확인
+                if (typeof CKEDITOR !== 'undefined' && CKEDITOR.ClassicEditor) {
+                foundEditor = CKEDITOR.ClassicEditor;
+                } else if (typeof ClassicEditor !== 'undefined') {
+                foundEditor = ClassicEditor;
+                } else if (typeof CKEditor5 !== 'undefined' && CKEditor5.ClassicEditor) {
+                foundEditor = CKEditor5.ClassicEditor;
+                } else if (window.ClassicEditor) {
+                foundEditor = window.ClassicEditor;
+                }
+
+                if (foundEditor) {
+                    initializeEditor(foundEditor);
+                } else if (attempts < maxAttempts) {
+                setTimeout(checkAndInitialize, 100);
+                } else {
+                    console.error('CKEditor 5 Superbuild 로드 시간 초과');
+                    showMessage('에디터 로드에 실패했습니다. 페이지를 새로고침해주세요.', 'error');
+                }
+            }
+
+            checkAndInitialize();
+            }
+
+        function initializeEditor(editorClass = null) {
+        if (!editorClass) {
+            if (typeof CKEDITOR !== 'undefined' && CKEDITOR.ClassicEditor) {
+                    editorClass = CKEDITOR.ClassicEditor;
+                } else if (typeof ClassicEditor !== 'undefined') {
+            editorClass = ClassicEditor;
+            } else if (typeof CKEditor5 !== 'undefined' && CKEditor5.ClassicEditor) {
+            editorClass = CKEditor5.ClassicEditor;
+            } else if (window.ClassicEditor) {
+            editorClass = window.ClassicEditor;
+            } else {
+                    console.error('CKEditor 5 Superbuild를 찾을 수 없습니다.');
+                    showMessage('CKEditor 5 Superbuild가 로드되지 않았습니다.', 'error');
+                    return Promise.reject(new Error('CKEditor not found'));
+                }
+            }
+
+            return editorClass.create(document.querySelector('#noticeContent'), {
+            removePlugins: [
+                    // 협업/코멘트/트랙체인지/리비전히스토리
+                    'Comments',
+                    'TrackChanges',
+                    'TrackChangesData',
+                    'RevisionHistory',
+                    'RealTimeCollaborativeComments',
+                    'RealTimeCollaborativeTrackChanges',
+                    'RealTimeCollaborativeRevisionHistory',
+                    'PresenceList',
+                    'CloudServices',
+
+                    // CKBox & EasyImage (CloudServices 의존)
+                    'CKBox', 'CKBoxEditing', 'CKBoxUI',
+                    'EasyImage',
+
+                    // 프리미엄/유료 기능들
+                    'ExportPdf',
+                    'ExportWord',
+                    'WProofreader',
+                    'MathType',
+
+                    // 기타 프리미엄: AI & Pagination
+                    'AIAssistant','AIAssistantUI','AIAssistantEditing','AIPrompt',
+                    'Pagination','PaginationEditing',
+
+                    // 기타 super-build에 포함되는 것들
+                    'SlashCommand',
+                    'Template',
+                    'DocumentOutline',
+                    'FormatPainter',
+                    'TableOfContents',
+                    'PasteFromOfficeEnhanced',
+                    'CaseChange'
+                    ],
+            toolbar: {
+            items: [
+                'heading','|',
+                'bold','italic','underline','strikethrough','|',
+                'fontSize','fontFamily','fontColor','fontBackgroundColor','|',
+                'bulletedList','numberedList','|',
+                'outdent','indent','|',
+                'alignment','|',
+                        'link','uploadImage','insertTable','|',
+                'blockQuote','codeBlock','|',
+                        'sourceEditing','|',
+                'undo','redo'
+            ]
+            },
+            image: {
+            toolbar: [
+                'imageTextAlternative','|',
+                'imageStyle:alignLeft','imageStyle:alignCenter','imageStyle:alignRight'
+            ]
+            },
+            table: {
+            contentToolbar: [ 'tableColumn','tableRow','mergeTableCells' ]
+            },
+            simpleUpload: {
+                    uploadUrl: `${API_BASE_URL}/kitms-attach/upload`,
+            withCredentials: true
+            },
+            sourceEditing: {
+                allowCollaborationFeatures: true,
+                language: 'html'
+            }
+        })
+        .then(newEditor => {
+            editor = newEditor;
+                return newEditor;
+        })
+        .catch(error => {
+                console.error('CKEditor 5 Superbuild 초기화 오류:', error);
+                showMessage('에디터 초기화에 실패했습니다.', 'error');
+                throw error;
+            });
+        }
+
+        async function loadNoticeData(noticeNo) {
+        try {
+            showLoading(true);
+            
+            const response = await fetch(`${API_BASE_URL}/notice/${noticeNo}`);
+            const data = await response.json();
+
+            if (data.statusCode === 200) {
+                    // API 응답 구조 확인 후 데이터에서 공지사항 추출
+                let notice = null;
+                
+                if (data.data && data.data.resultInfo) {
+                    notice = data.data.resultInfo;
+                } else if (data.resultInfo) {
+                    notice = data.resultInfo;
+                } else if (data.data) {
+                    notice = data.data;
+                } else if (data.result) {
+                    notice = data.result;
+                } else {
+                        // 모든 필드를 확인
+                    for (const key in data) {
+                        if (data[key] && typeof data[key] === 'object' && data[key].noticeNo) {
+                            notice = data[key];
+                            break;
+                        }
+                    }
+                }
+                
+                if (notice) {
+                    document.getElementById('noticeNo').value = notice.noticeNo || '';
+                    document.getElementById('noticeTitle').value = notice.noticeTitle || '';
+                    document.getElementById('staticFlag').checked = notice.staticFlag === true;
+
+                        // 에디터 초기화 후 내용 설정
+                    await initializeEditor();
+                    if (editor) {
+                        editor.setData(notice.noticeContent || '');
+                    }
+
+                        // 기존 첨부파일 로드
+                    await loadExistingAttachments(noticeNo);
+                } else {
+                        showMessage('공지사항 데이터를 찾을 수 없습니다.', 'error');
+                }
+            } else {
+                    showMessage('공지사항을 불러오는데 실패했습니다: ' + (data.message || '알 수 없는 오류'), 'error');
+            }
+        } catch (error) {
+                console.error('공지사항 로드 오류:', error);
+                showMessage('공지사항을 불러오는 중 오류가 발생했습니다.', 'error');
+        } finally {
+            showLoading(false);
+        }
+        }
+
+        async function saveNotice() {
+            try {
+                // 유효성 검사
+                const title = document.getElementById('noticeTitle').value.trim();
+                if (!title) {
+                    showMessage('제목을 입력해주세요.', 'error');
+                    return;
+                }
+
+                if (!editor) {
+                    showMessage('에디터가 초기화되지 않았습니다.', 'error');
+                    return;
+                }
+
+                const content = editor.getData();
+                if (!content || content.trim() === '') {
+                    showMessage('내용을 입력해주세요.', 'error');
+                    return;
+                }
+
+                showLoading(true);
+
+                const formData = {
+                    noticeTitle: title,
+                    noticeContent: content,
+                    staticFlag: document.getElementById('staticFlag').checked ? 1 : 0
+                };
+
+                if (isEditMode) {
+                    formData.noticeNo = currentNoticeNo;
+                }
+
+                const url = isEditMode ? 
+                    `${API_BASE_URL}/notice/${currentNoticeNo}` : 
+                    `${API_BASE_URL}/notice`;
+                
+                const method = isEditMode ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.statusCode === 200) {
+                    // 공지사항 저장 성공 후 첨부파일 업로드
+                    const noticeNo = data.data?.resultInfo?.noticeNo || data.data?.noticeNo || data.data?.notice_no || currentNoticeNo;
+                    
+                    if (noticeNo && attachedFiles.length > 0) {
+                        const uploadSuccess = await uploadAttachedFiles(noticeNo);
+                        if (!uploadSuccess) {
+                            showMessage('공지사항은 저장되었지만 첨부파일 업로드에 실패했습니다.', 'error');
+                        } else {
+                            showMessage('공지사항과 첨부파일이 모두 저장되었습니다.', 'success');
+                        }
+                    } else if (attachedFiles.length > 0) {
+                        showMessage('공지사항은 저장되었지만 첨부파일 업로드에 실패했습니다. (noticeNo 없음)', 'error');
+                    } else {
+                        showMessage(
+                            isEditMode ? '공지사항이 수정되었습니다' : '공지사항이 생성되었습니다', 
+                            'success'
+                        );
+                    }
+                    
+                    // 2초 후 목록으로 이동
+                    setTimeout(() => {
+                        window.location.href = '/admin/notice-management.html';
+                    }, 2000);
+                } else {
+                    showMessage(data.message || '저장에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                console.error('저장 오류:', error);
+                showMessage('저장 중 오류가 발생했습니다.', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function goBack() {
+            window.location.href = '/admin/notice-management.html';
+        }
+
+        function logout() {
+            window.location.href = '/admin/logout';
+        }
+
+        async function deleteNotice() {
+            if (!confirm('정말로 이 공지사항을 삭제하시겠습니까?')) {
+                return;
+            }
+
+            if (!currentNoticeNo) {
+                showMessage('삭제할 공지사항 번호가 없습니다.', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                
+                const response = await fetch(`${API_BASE_URL}/notice/${currentNoticeNo}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.statusCode === 200) {
+                    showMessage('공지사항이 삭제되었습니다.', 'success');
+                    // 2초 후 목록으로 이동
+                    setTimeout(() => {
+                        window.location.href = '/admin/notice-management.html';
+                    }, 2000);
+                } else {
+                    showMessage(data.message || '공지사항 삭제에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                console.error('공지사항 삭제 오류:', error);
+                showMessage('공지사항 삭제 중 오류가 발생했습니다.', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = `<div class="message ${type}">${message}</div>`;
+            
+            // 5초 후 메시지 자동 제거
+            setTimeout(() => {
+                messageArea.innerHTML = '';
+            }, 5000);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        // ==================== 첨부파일 관련 함수들 ====================
+
+        // 파일 업로드 초기화
+        function initializeFileUpload() {
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            // 클릭 이벤트
+            fileUploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            // 파일 선택 이벤트
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // 드래그 앤 드롭 이벤트
+            fileUploadArea.addEventListener('dragover', handleDragOver);
+            fileUploadArea.addEventListener('dragleave', handleDragLeave);
+            fileUploadArea.addEventListener('drop', handleDrop);
+        }
+
+        // 드래그 오버 처리
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        // 드래그 리브 처리
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        // 드롭 처리
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        }
+
+        // 파일 선택 처리
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            handleFiles(files);
+        }
+
+        // 파일 처리
+        function handleFiles(files) {
+            for (let file of files) {
+                // 파일 크기 체크 (10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    showMessage(`파일 "${file.name}"이 너무 큽니다. 최대 10MB까지 업로드 가능합니다.`, 'error');
+                    continue;
+                }
+
+                // 중복 파일 체크
+                if (attachedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    showMessage(`파일 "${file.name}"이 이미 첨부되어 있습니다.`, 'error');
+                    continue;
+                }
+
+                // 파일 정보 생성
+                const fileInfo = {
+                    id: Date.now() + Math.random(),
+                    file: file,
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    uploaded: false,
+                    attachNo: null
+                };
+
+                attachedFiles.push(fileInfo);
+                displayFileItem(fileInfo);
+            }
+
+            // 파일 입력 초기화
+            document.getElementById('fileInput').value = '';
+        }
+
+        // 파일 아이템 표시
+        function displayFileItem(fileInfo) {
+            const fileList = document.getElementById('fileList');
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.id = `file-${fileInfo.id}`;
+
+            const fileIcon = getFileIcon(fileInfo.type);
+            const fileSize = formatFileSize(fileInfo.size);
+
+            fileItem.innerHTML = `
+                <div class="file-info">
+                    <span class="file-icon">${fileIcon}</span>
+                    <div class="file-details">
+                        <div class="file-name">${fileInfo.name}</div>
+                        <div class="file-size">${fileSize}</div>
+                    </div>
+                </div>
+                <div class="file-actions">
+                    ${fileInfo.uploaded ? 
+                        `<button class="file-action-btn file-download-btn" onclick="downloadFile(${fileInfo.attachNo})">다운로드</button>
+                         <button class="file-action-btn file-delete-btn" onclick="deleteExistingFile(${fileInfo.attachNo}, '${fileInfo.id}')">삭제</button>` : 
+                        `<button class="file-action-btn file-delete-btn" onclick="removeFile('${fileInfo.id}')">삭제</button>`
+                    }
+                </div>
+            `;
+
+            fileList.appendChild(fileItem);
+        }
+
+        // 파일 아이콘 반환
+        function getFileIcon(fileType) {
+            if (fileType.startsWith('image/')) return '🖼️';
+            if (fileType.includes('pdf')) return '📄';
+            if (fileType.includes('word') || fileType.includes('document')) return '📝';
+            if (fileType.includes('excel') || fileType.includes('spreadsheet')) return '📊';
+            if (fileType.includes('powerpoint') || fileType.includes('presentation')) return '📋';
+            if (fileType.includes('zip') || fileType.includes('rar')) return '🗜️';
+            if (fileType.includes('video/')) return '🎥';
+            if (fileType.includes('audio/')) return '🎵';
+            return '📎';
+        }
+
+        // 파일 크기 포맷팅
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 파일 제거
+        function removeFile(fileId) {
+            attachedFiles = attachedFiles.filter(f => f.id !== fileId);
+            const fileItem = document.getElementById(`file-${fileId}`);
+            if (fileItem) {
+                fileItem.remove();
+            }
+        }
+
+        // 파일 다운로드
+        function downloadFile(attachNo) {
+            window.open(`${API_BASE_URL}/kitms-attaches/file-download/${attachNo}`, '_blank');
+        }
+
+        // 기존 첨부파일 삭제
+        async function deleteExistingFile(attachNo, fileId) {
+            if (!confirm('정말로 이 첨부파일을 삭제하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitms-attaches/${attachNo}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.statusCode === 200) {
+                    // UI에서 파일 아이템 제거
+                    const fileItem = document.getElementById(`file-${fileId}`);
+                    if (fileItem) {
+                        fileItem.remove();
+                    }
+
+                    // attachedFiles 배열에서도 제거
+                    const fileIndex = attachedFiles.findIndex(f => f.id === fileId);
+                    if (fileIndex !== -1) {
+                        attachedFiles.splice(fileIndex, 1);
+                    }
+
+                    showMessage('첨부파일이 삭제되었습니다.', 'success');
+                } else {
+                    showMessage('첨부파일 삭제에 실패했습니다: ' + (data.message || '알 수 없는 오류'), 'error');
+                }
+            } catch (error) {
+                console.error('첨부파일 삭제 오류:', error);
+                showMessage('첨부파일 삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 첨부파일 업로드
+        async function uploadAttachedFiles(noticeNo) {
+            const filesToUpload = attachedFiles.filter(fileInfo => !fileInfo.uploaded);
+            
+            if (filesToUpload.length === 0) {
+                return true;
+            }
+
+            const uploadPromises = filesToUpload.map(fileInfo => uploadSingleFile(fileInfo, noticeNo));
+
+            try {
+                await Promise.all(uploadPromises);
+                return true;
+            } catch (error) {
+                console.error('첨부파일 업로드 오류:', error);
+                return false;
+            }
+        }
+
+        // 파일 단일 업로드
+        async function uploadSingleFile(fileInfo, noticeNo) {
+            const formData = new FormData();
+            formData.append('file', fileInfo.file);
+            formData.append('tableName', 'KITMS_NOTICE');
+            formData.append('tablePk', noticeNo);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitms-attaches/upload-file`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.statusCode === 200) {
+                    fileInfo.uploaded = true;
+                    fileInfo.attachNo = data.data.attachNo;
+                    
+                    // UI 업데이트
+                    const fileItem = document.getElementById(`file-${fileInfo.id}`);
+                    if (fileItem) {
+                        const actionsDiv = fileItem.querySelector('.file-actions');
+                        actionsDiv.innerHTML = `<button class="file-action-btn file-download-btn" onclick="downloadFile(${fileInfo.attachNo})">다운로드</button>`;
+                    }
+                } else {
+                    throw new Error(data.message || '파일 업로드 실패');
+                }
+            } catch (error) {
+                console.error(`파일 "${fileInfo.name}" 업로드 오류:`, error);
+                throw error;
+            }
+        }
+
+        // 기존 첨부파일 로드 (수정 모드)
+        async function loadExistingAttachments(noticeNo) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitms-attaches/list/KITMS_NOTICE/${noticeNo}`);
+                const data = await response.json();
+
+                if (data.statusCode === 200 && data.data) {
+                    const attachments = Array.isArray(data.data.list) ? data.data.list : 
+                                      Array.isArray(data.data) ? data.data : [data.data];
+                    
+                    attachments.forEach(attach => {
+                        const fileName = attach.attachFileName || attach.fileName || 'unknown_file';
+                        
+                        const fileInfo = {
+                            id: `existing-${attach.attachNo}`,
+                            name: fileName,
+                            size: attach.attachFileSize || attach.fileSize || 0,
+                            type: getFileTypeFromName(fileName),
+                            uploaded: true,
+                            attachNo: attach.attachNo
+                        };
+
+                        attachedFiles.push(fileInfo);
+                        displayFileItem(fileInfo);
+                    });
+                }
+            } catch (error) {
+                console.error('기존 첨부파일 로드 오류:', error);
+            }
+        }
+
+        // 파일명에서 타입 추정
+        function getFileTypeFromName(fileName) {
+            if (!fileName || typeof fileName !== 'string') {
+                return 'application/octet-stream';
+            }
+            
+            const extension = fileName.split('.').pop().toLowerCase();
+            const typeMap = {
+                'jpg': 'image/jpeg',
+                'jpeg': 'image/jpeg',
+                'png': 'image/png',
+                'gif': 'image/gif',
+                'pdf': 'application/pdf',
+                'doc': 'application/msword',
+                'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'xls': 'application/vnd.ms-excel',
+                'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'ppt': 'application/vnd.ms-powerpoint',
+                'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                'zip': 'application/zip',
+                'rar': 'application/x-rar-compressed'
+            };
+            return typeMap[extension] || 'application/octet-stream';
+        }
+
+    </script>
+</body>
+</html>

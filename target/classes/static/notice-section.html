@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공지사항 섹션</title>
+    <style>
+        .area5 {
+            padding: 80px 0;
+            background-color: #f8f9fa;
+        }
+        
+        .center_frame {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .area_tit {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .area_tit h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .area_tit .subtxt {
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        .rows {
+            padding-top: 354px;
+            padding-bottom: 160px;
+        }
+        
+        .rows .row {
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #e5e5e5;
+            border-bottom: 1px solid #e5e5e5;
+            height: 188px;
+        }
+        
+        .rows .row .date {
+            width: 236px;
+            order: 1;
+        }
+        
+        .rows .row .date p {
+            padding-left: 35px;
+            font-size: 32px;
+            color: #999;
+            opacity: 0.9;
+            font-family: redhatdisplay;
+            font-weight: bold;
+        }
+        
+        .rows .row .board {
+            flex: 1;
+            order: 2;
+        }
+        
+        .rows .row .board a {
+            display: block;
+            text-align: left;
+        }
+        
+        .rows .row .board .title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            text-decoration: none;
+            margin-bottom: 10px;
+        }
+        
+        .rows .row .board .title:hover {
+            color: #007bff;
+        }
+        
+        .rows .row .board .content {
+            font-size: 18px;
+            color: #555;
+            text-decoration: none;
+        }
+        
+        .rows .row .thumb {
+            width: 280px;
+            order: 3;
+        }
+        
+        .rows .row .thumb a img {
+            width: 100%;
+            max-width: 240px;
+        }
+        
+        .rows .row:last-child {
+            border-top: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 60px 20px;
+            color: #dc3545;
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .area5 {
+                padding: 0 20px;
+            }
+            
+            .rows {
+                padding-top: 0;
+            }
+            
+            .rows .row {
+                flex-direction: column;
+                align-items: flex-start;
+                height: auto;
+                margin-bottom: 32px;
+            }
+            
+            .rows .row .date {
+                width: 100%;
+                order: 2;
+            }
+            
+            .rows .row .date p {
+                font-size: 12px;
+                padding: 24px 0 16px 0;
+            }
+            
+            .rows .row .board {
+                width: 100%;
+                order: 3;
+                flex: unset;
+            }
+            
+            .rows .row .board .title {
+                font-size: 20px;
+            }
+            
+            .rows .row .board .content {
+                font-size: 14px;
+                padding-bottom: 32px;
+            }
+            
+            .rows .row .thumb {
+                width: 100%;
+                order: 1;
+            }
+            
+            .rows .row .thumb a img {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .rows .row:first-child {
+                border-top: none;
+            }
+            
+            .rows .row:last-child {
+                border-bottom: none;
+            }
+            
+            .area_tit h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="area5 area">
+        <div class="center_frame">
+            <div class="area_tit">                
+                <h2>K-ONE Story</h2>
+                <p class="subtxt">케이원의 새로운 소식과 정보를 공유한다</p>
+            </div>
+            <div class="rows" id="noticeList">
+                <div class="loading">공지사항을 불러오는 중...</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,422 @@
+@charset "utf-8"; 
+@import 'variables';
+
+
+
+.sub0401 {
+    margin-top: 0;
+    padding-top: 160px;
+    h3 {
+        font-size: 72px;
+        font-weight: 800;
+        margin-bottom: 96px;
+    }
+}
+
+.moreline {   
+    text-align: center;         
+    .more {
+        margin:64px auto 0;
+        width:240px;
+        height: 64px;
+        border:1px solid #e0e0e0;
+        border-radius: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "RedHatDisplay";
+        font-size: 16px;
+        font-weight: bold;
+    }
+}
+@media (max-width:768px) {
+    .moreline {
+        .more {
+            height:54px;
+            font-size: 14px;
+            margin-top: 32px;
+        }
+    }
+}
+
+
+
+.sub0401 {
+    .board_list h3 {
+        font-size: 72px;
+        font-weight: 800;
+    }
+    .board {
+        ul {
+            display: flex;
+            flex-wrap: wrap;
+            gap:32px;
+            li {
+                width:512px;
+                height:320px;
+                a {
+                    padding: 40px;
+                    display: flex;
+                    flex-direction: column;
+                    width:100%;
+                    height:100%;
+                    border:1px solid #e5e5e5;
+                    border-radius: 32px;
+                    position: relative;
+                    .tags {
+                        display: flex;
+                        gap: 8px;
+                        margin-bottom: 15px;
+                    }
+                    .tag {
+                        display: inline-block;
+                        align-self: flex-start; 
+                        font-size: 14px;
+                        font-weight: 500;
+                        padding:6px 8px;
+                        border-radius: 4px;
+                        background-color: #f5f6f8;
+                        margin-bottom: 15px;
+                    }
+                    .tit {
+                        display: block;
+                        font-size: 24px;
+                        font-weight: bold;
+                    }
+                    .bottom {
+                        display: flex;
+                        align-items: center;
+                        margin-top: auto;
+                    }
+                    .dday {
+                        position: relative;
+                        margin-right: 33px;
+                        font-size: 16px;
+                        font-family: "RedHatDisplay";
+                        font-weight: bold;
+                    }
+                    .dday:after {
+                        position: absolute;
+                        right:-17px;
+                        top:6px;
+                        width:1px;
+                        height:12px;
+                        border-right:1px solid #D9D9D9;
+                        content: "";
+                    }
+                    .date {
+                        display: block;
+                        font-size: 16px;
+                        font-family: "RedHatDisplay";
+                        color:#666;
+                    }
+                }
+            }
+        }
+    }
+}
+@media (max-width:768px) {
+    .sub0401 {
+        padding-top: 56px;
+        .board_list {
+            h3 {
+                font-size: 32px;
+                margin-bottom: 32px;
+            }
+            .loc {
+                display: none;
+            }
+        }
+        .board {
+            ul {
+                flex-direction: column;
+                gap:24px;
+                li {
+                    width:100%;
+                    height:240px;
+                    a {   
+                        padding:24px;
+                        .tags {
+                            margin-bottom: 12px;
+                        }
+                        .tag {
+                            font-size: 12px;
+                            margin-bottom: 0;
+                        }
+                        .tit {
+                            font-size: 17px;
+                        }
+                        .dday {
+                            font-size: 14px;
+                        }
+                        .dday:after {
+                            top:4px;
+                        }
+                        .date {
+                            font-size: 14px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+.sub0402.body {background:url(../images/intro_sub0402.png) no-repeat top center;}
+.sub0402 {
+    .philasophy {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 96px;
+        .l {
+            flex:1;
+            font-weight: 800;
+            font-size: 56px;
+        }
+        .r {
+            width:1230px;
+            font-weight: 300;
+            font-size: 32px;
+        }
+    }
+    .koreano1 {
+        margin-top: 160px;
+        .tit {
+            margin-bottom: 12px;
+            h3 {
+                display: inline;
+                font-size: 44px;
+                font-weight: 800;
+                font-family: "Redhatdisplay";
+            }
+            .b {
+                color:#005CB9;
+            }
+        }
+        .subtit {
+            font-size: 20px;
+            font-weight: 300;
+            margin-bottom: 32px;
+        }
+    }
+    .talent {
+        height:600px;
+        border-radius: 32px;
+        background: url(../images/sub0402_talent_bg1.png) no-repeat center;
+        transition: background-image 0.2s ease;
+        ul {
+            display: flex;    
+            border-radius: 32px;    
+            background-color: rgba(0, 0, 0, 0.2);                
+            li {
+                width:400px;
+                height: 600px;
+                padding:64px 40px;
+                display: flex;
+                flex-direction: column;  
+                border-right: 1px solid rgba(255, 255, 255, 0.2);
+                h4 {
+                    font-size: 28px;
+                    font-family: "RedHatDisplay";
+                    font-weight: 800;
+                    color:#fff;
+                    margin-top: 370px;
+                    margin-bottom: 16px;
+                    opacity: 0.56;
+                    transition: margin-top 0.3s ease, opacity 0.3s ease, color 0.3s ease;
+                }
+                p {
+                    font-family: "RedHatDisplay";
+                    color:#fff;
+                    opacity: 0.56;
+                    transition: opacity 0.4s ease;
+                }
+            }
+            li:hover {
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+            li:hover h4 {
+               margin-top: 300px;
+               opacity: 1;
+            }
+            li:hover p {
+               opacity: 1;
+            }
+            li:first-child {
+                border-top-left-radius: 32px;
+                border-bottom-left-radius: 32px;
+            }
+            li:last-child {
+                border:0;
+                border-top-right-radius: 32px;
+                border-bottom-right-radius: 32px;
+            }          
+        }
+        &:has(ul > li:nth-child(1):hover) { background-image: url(../images/sub0402_talent_bg1.png); }
+        &:has(ul > li:nth-child(2):hover) { background-image: url(../images/sub0402_talent_bg2.png); }
+        &:has(ul > li:nth-child(3):hover) { background-image: url(../images/sub0402_talent_bg3.png); }
+        &:has(ul > li:nth-child(4):hover) { background-image: url(../images/sub0402_talent_bg4.png); }
+    }
+    .cards_wrap{   
+        background-color: #F5F6F8;     
+        padding:160px 0;
+        .cards {
+            width:1600px;
+            margin:0 auto;
+            .philasophy {
+                padding-top: 0;
+                margin-bottom: 160px;
+            }
+            h4 {            
+                font-size: 32px;
+                font-weight: bold;
+                margin-top: 80px;
+                margin-bottom: 32px;
+                .blue {                
+                    font-size: 32px;
+                    color:#005CB9;
+                    font-weight: bold;
+                    font-family: "RedHatDisplay";
+                }            
+            }
+            ul {
+                display: flex;
+                gap:32px;
+                li {
+                    width: calc((100% - 32px) / 2);
+                    height:365px;
+                    background-color: #fff;
+                    border-radius: 32px;
+                    display: flex;
+                    align-items: center;
+                    flex-direction: column;
+                    justify-content: center;
+                    .tit {
+                        font-size: 24px;
+                        font-weight: 800;
+                        margin:48px 0 16px;
+                    }
+                    .sub {
+                        font-size: 20px;
+                        font-weight: 300;
+                    }
+                }
+            }
+        }
+    }
+
+}
+@media (max-width:768px) {
+    .sub0402 {      
+        .philasophy {
+            flex-direction: column;
+            padding-top: 48px;
+            .l {
+                font-size: 28px;
+                margin-bottom: 16px;;
+            }
+            .r {
+                font-size: 18px;
+                width: 100%;
+            }
+        }
+        .koreano1 {
+            margin-top: 72px;
+            .tit {
+                h3 {
+                    font-size: 24px;
+                }
+            }            
+            .subtit {
+                font-size: 15px;
+                margin-bottom: 16px;
+            }
+        }
+        .talent {
+            background: none;
+            overflow: hidden;
+            height:auto;
+            ul {
+                flex-direction: column;
+                li {
+                    width: 100%;
+                    height:148px;
+                    padding:32px;
+                    h4 {
+                        font-size: 19px;
+                        margin-top: 0;
+                        opacity: 1;
+                    }
+                    p {
+                        font-size: 15px;
+                        opacity: 1;
+                    }
+                }
+                li:nth-child(1) {
+                    background: url(../images/sub0402_talent_bg1.png) no-repeat center;                    
+                    border-top-left-radius: 32px;
+                    border-top-right-radius: 32px;
+                    border-bottom-left-radius: 0;
+                    background-size: cover;
+                }
+                li:nth-child(2) {
+                    background: url(../images/sub0402_talent_bg2.png) no-repeat center;
+                    background-size: cover;
+                }
+                li:nth-child(3) {
+                    background: url(../images/sub0402_talent_bg3.png) no-repeat center;
+                    background-size: cover;
+                }
+                li:nth-child(4) {
+                    background: url(../images/sub0402_talent_bg4.png) no-repeat center;
+                    border-bottom-left-radius: 32px;
+                    border-bottom-right-radius: 32px;
+                    border-top-right-radius: 0;
+                    background-size: cover;
+                }
+                li:hover h4 {
+                    margin-top: 0;
+                }
+            }
+        }
+        .cards_wrap{   
+            padding:72px 0;
+            .cards {
+                width:100%;
+                padding:0 20px;
+                .philasophy {
+                    margin-bottom: 72px;
+                }
+                h4 {    
+                    font-size: 21px;   
+                    margin:40px 0 16px;     
+                    .blue {                
+                        font-size: 21px;
+                    }            
+                }
+                ul {
+                    flex-direction: column;
+                    gap:16px;
+                    li {
+                        width: 100%;
+                        height:206px;
+                        border-radius: 24px;
+                        img {
+                            width:88px;
+                            height:88px;
+                        }
+                        .tit {
+                            font-size: 17px;
+                            margin:24px 0 8px;
+                        }
+                        .sub {
+                            font-size: 15px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

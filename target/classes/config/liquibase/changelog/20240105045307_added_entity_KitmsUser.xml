@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity KitmsUser.
+    -->
+    <changeSet id="20240105045307-1" author="jhipster">
+        <createTable tableName="kitms_user">
+            <column name="user_no" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="varchar(30)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="ux_kitms_user__user_id" />
+            </column>
+            <column name="user_pwd" type="varchar(512)">
+                <constraints nullable="false" />
+            </column>
+            <column name="user_name" type="varchar(30)">
+                <constraints nullable="false" />
+            </column>
+            <column name="user_tel" type="varchar(15)">
+                <constraints nullable="true" />
+            </column>
+            <column name="user_mobile" type="varchar(15)">
+                <constraints nullable="true" />
+            </column>
+            <column name="user_email" type="varchar(50)">
+                <constraints nullable="true" />
+            </column>
+            <column name="enable" type="boolean">
+                <constraints nullable="false" />
+            </column>
+            <column name="auth_code" type="char(3)">
+                <constraints nullable="false" />
+            </column>
+            <column name="user_etc" type="varchar(500)">
+                <constraints nullable="true" />
+            </column>
+            <column name="create_dt" type="${datetimeType}">
+                <constraints nullable="false" />
+            </column>
+            <column name="create_user_id" type="varchar(30)">
+                <constraints nullable="false" />
+            </column>
+            <column name="first_flag" type="boolean">
+                <constraints nullable="false" />
+            </column>
+            <column name="last_pass_mod_dt" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+        <dropDefaultValue tableName="kitms_user" columnName="create_dt" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="kitms_user" columnName="last_pass_mod_dt" columnDataType="${datetimeType}"/>
+    </changeSet>
+</databaseChangeLog>

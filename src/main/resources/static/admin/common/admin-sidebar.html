@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Sidebar</title>
+    <style>
+        .admin-sidebar {
+            width: 250px !important;
+            height: 100vh !important;
+            background-color: #2c3e50 !important;
+            color: white !important;
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            overflow-y: auto !important;
+            z-index: 1000 !important;
+            transition: all 0.3s ease !important;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif !important;
+            font-size: 14px !important;
+        }
+
+        .admin-sidebar.collapsed {
+            width: 60px;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #34495e;
+            background-color: #34495e;
+        }
+
+        .sidebar-header h3 {
+            margin: 0 !important;
+            font-size: 18px !important;
+            font-weight: bold !important;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif !important;
+            color: white !important;
+        }
+
+        .sidebar-header.collapsed h3 {
+            display: none;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            top: 20px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .sidebar-toggle:hover {
+            background-color: #34495e;
+            border-radius: 3px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-item {
+            border-bottom: 1px solid #34495e;
+        }
+
+        .menu-link {
+            display: flex !important;
+            align-items: center !important;
+            padding: 15px 20px !important;
+            color: #ecf0f1 !important;
+            text-decoration: none !important;
+            transition: all 0.3s ease !important;
+            cursor: pointer !important;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif !important;
+            font-size: 14px !important;
+        }
+
+        .menu-link:hover {
+            background-color: #34495e;
+            color: white;
+        }
+
+        .menu-link.active {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .menu-icon {
+            width: 20px !important;
+            height: 20px !important;
+            margin-right: 15px !important;
+            font-size: 18px !important;
+            text-align: center !important;
+            color: inherit !important;
+        }
+
+        .menu-text {
+            flex: 1 !important;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif !important;
+            font-size: 14px !important;
+            color: inherit !important;
+        }
+
+        /* 계층구조 제거로 서브메뉴 관련 스타일 제거 */
+
+        .collapsed .menu-text {
+            display: none;
+        }
+
+        .collapsed .menu-link {
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .collapsed .menu-icon {
+            margin-right: 0;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+
+            .admin-sidebar.mobile-open {
+                transform: translateX(0);
+            }
+        }
+
+        /* 로딩 스피너 */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #bdc3c7;
+        }
+
+        .spinner {
+            border: 2px solid #34495e;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header" id="sidebarHeader">
+            <h3>케이원 관리자</h3>
+        </div>
+        
+        <ul class="sidebar-menu" id="sidebarMenu">
+            <li class="loading">
+                <div class="spinner"></div>
+                메뉴를 불러오는 중...
+            </li>
+        </ul>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.origin + '/api';
+        let isCollapsed = false;
+
+        // 페이지 로드 시 메뉴 로드
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAdminMenus();
+            setActiveMenu();
+        });
+
+        // 어드민 메뉴 로드 (권한 기반)
+        async function loadAdminMenus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin-menus/accessible`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const menus = await response.json();
+                    renderMenus(menus);
+                } else {
+                    console.error('Failed to load accessible menus, status:', response.status);
+                    showError('메뉴를 불러오는데 실패했습니다. (상태: ' + response.status + ')');
+                }
+            } catch (error) {
+                console.error('Error loading accessible admin menus:', error);
+                showError('메뉴를 불러오는 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 메뉴 렌더링
+        function renderMenus(menus) {
+            const menuContainer = document.getElementById('sidebarMenu');
+            
+            if (!menuContainer) {
+                console.error('Menu container not found!');
+                return;
+            }
+            
+            if (menus.length === 0) {
+                menuContainer.innerHTML = '<li class="loading">등록된 메뉴가 없습니다.</li>';
+                return;
+            }
+
+            menuContainer.innerHTML = menus.map(menu => `
+                <li class="menu-item">
+                    <a class="menu-link" 
+                       href="${menu.menuUrl || '#'}" 
+                       data-menu-id="${menu.menuNo}">
+                        <span class="menu-icon">${getMenuIcon(menu.menuIcon)}</span>
+                        <span class="menu-text">${menu.menuName}</span>
+                    </a>
+                </li>
+            `).join('');
+
+            // 메뉴 클릭 이벤트 추가
+            addMenuClickEvents();
+        }
+
+        // 메뉴 아이콘 매핑
+        function getMenuIcon(iconName) {
+            const iconMap = {
+                'dashboard': '📊',
+                'content_copy': '📄',
+                'people': '👥',
+                'settings': '⚙️',
+                'announcement': '📢',
+                'newspaper': '📰',
+                'menu': '📋',
+                'admin_panel_settings': '👤',
+                'tune': '🎛️',
+                'history': '📜'
+            };
+            return iconMap[iconName] || '📁';
+        }
+
+        // 계층구조 제거로 서브메뉴 토글 함수 제거
+
+        // 메뉴 클릭 이벤트 추가
+        function addMenuClickEvents() {
+            document.querySelectorAll('.menu-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // URL이 있는 경우에만 페이지 이동
+                    if (this.getAttribute('href') && this.getAttribute('href') !== '#') {
+                        // 활성 메뉴 설정
+                        setActiveMenuItem(this);
+                        
+                        // 페이지 이동
+                        window.location.href = this.getAttribute('href');
+                    }
+                });
+            });
+        }
+
+        // 활성 메뉴 설정
+        function setActiveMenuItem(activeLink) {
+            // 모든 활성 클래스 제거
+            document.querySelectorAll('.menu-link.active').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // 현재 링크에 활성 클래스 추가
+            activeLink.classList.add('active');
+        }
+
+        // 현재 페이지에 맞는 활성 메뉴 설정
+        function setActiveMenu() {
+            const currentPath = window.location.pathname;
+            
+            document.querySelectorAll('.menu-link').forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && currentPath.includes(href.replace('/admin/', ''))) {
+                    setActiveMenuItem(link);
+                }
+            });
+        }
+
+        // 오류 메시지 표시
+        function showError(message) {
+            const menuContainer = document.getElementById('sidebarMenu');
+            menuContainer.innerHTML = `<li class="loading">${message}</li>`;
+        }
+
+        // 전역 함수로 노출
+        window.toggleSidebar = toggleSidebar;
+        window.toggleMobileSidebar = toggleMobileSidebar;
+    </script>
+</body>
+</html>

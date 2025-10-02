@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공지사항 관리 - KITMS 관리자</title>
+    <link rel="icon" href="../images/ico.ico" type="image/x-icon">
+    <!-- 권한 체크 스크립트 -->
+    <script src="../common/admin-permission.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 사이드바는 공통 컴포넌트로 로드 */
+
+        /* 메인 콘텐츠 */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.sidebar-collapsed {
+            margin-left: 60px;
+        }
+
+        /* 모바일 반응형 */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.sidebar-collapsed {
+                margin-left: 0;
+            }
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        /* 공지사항 관리 콘텐츠 */
+        .content-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .content-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        /* 공지사항 목록 */
+        .notice-list {
+            margin-bottom: 30px;
+        }
+
+        .notice-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .notice-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .notice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .notice-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .notice-meta {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .notice-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .notice-content {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .notice-status {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-static {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-normal {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .content-card {
+                padding: 20px;
+            }
+
+            .notice-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .notice-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- 공통 사이드바 로드 -->
+        <div id="adminSidebarContainer"></div>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="main-content">
+            <header class="header">
+                <h1 class="header-title">공지사항 관리</h1>
+                <div class="user-info">
+                    <span class="user-name" id="headerUserName" data-username="${username}">관리자</span>
+                    <button class="logout-btn" onclick="logout()">로그아웃</button>
+                </div>
+            </header>
+
+            <div class="content-card">
+                <div class="content-header">
+                    <h2 class="content-title">공지사항 목록</h2>
+                    <button class="btn btn-primary" onclick="createNotice()">새 공지사항 작성</button>
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+
+                <div class="notice-list" id="noticeList">
+                    <div class="loading">공지사항을 불러오는 중...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <script>
+        const API_BASE_URL = '/api';
+        let currentNoticeNo = null;
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', function() {
+            initializeAdmin();
+        });
+
+        function initializeAdmin() {
+            // Spring Security 세션 기반 인증이므로 별도의 토큰 검증 불필요
+            // 사용자 정보는 서버에서 전달받은 정보 사용
+            const userNameElement = document.getElementById('headerUserName');
+            
+            if (userNameElement) {
+                // 서버에서 전달받은 사용자명이 있으면 사용, 없으면 기본값
+                const serverUserName = userNameElement.getAttribute('data-username');
+                
+                // ${username}이 치환되지 않은 경우, 서버에서 사용자명을 직접 가져오기
+                if (serverUserName && serverUserName !== '${username}') {
+                    userNameElement.textContent = serverUserName;
+                } else {
+                    // 서버에서 현재 사용자 정보 가져오기
+                    fetch('/api/kitms-users/current', {
+                        method: 'GET',
+                        credentials: 'include'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.statusCode === 200 && data.data) {
+                            const currentUser = data.data;
+                            userNameElement.textContent = currentUser.resultInfo.userName;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('사용자 정보 가져오기 오류:', error);
+                    });
+                }
+            }
+
+            // 공지사항 목록 로드
+            loadNotices();
+        }
+
+        async function loadNotices() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitms-notices/all`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // 세션 쿠키 포함
+                });
+                
+                const data = await response.json();
+                
+                if (data.statusCode === 200) {
+                    displayNotices(data.data.list || []);
+                } else {
+                    showError('공지사항을 불러오는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('공지사항 로드 오류:', error);
+                showError('공지사항을 불러오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        function displayNotices(notices) {
+            const noticeList = document.getElementById('noticeList');
+            
+            if (!notices || notices.length === 0) {
+                noticeList.innerHTML = '<div class="loading">등록된 공지사항이 없습니다.</div>';
+                return;
+            }
+
+            const noticeHTML = notices.map(notice => {
+                const isStatic = notice.staticFlag === '1';
+                const statusBadge = isStatic 
+                    ? '<span class="status-badge status-static">상단 고정</span>'
+                    : '<span class="status-badge status-normal">일반</span>';
+                
+                // HTML 태그 제거하여 텍스트만 추출하고 길이 제한
+                const textContent = notice.noticeContent ? 
+                    notice.noticeContent.replace(/<[^>]*>/g, '').trim() : 
+                    '내용이 없습니다.';
+                const truncatedContent = textContent.length > 150 ? 
+                    textContent.substring(0, 150) + '...' : 
+                    textContent;
+                
+                return `
+                    <div class="notice-item">
+                        <div class="notice-header">
+                            <div>
+                                <div class="notice-title">${notice.noticeTitle}</div>
+                                <div class="notice-meta">
+                                    작성자: ${notice.createUserName} | 작성일: ${notice.createDt}
+                                </div>
+                            </div>
+                            <div class="notice-actions">
+                                <button class="btn btn-warning" onclick="editNotice(${notice.noticeNo})">수정</button>
+                                <button class="btn btn-danger" onclick="deleteNotice(${notice.noticeNo})">삭제</button>
+                            </div>
+                        </div>
+                        <div class="notice-content">
+                            ${truncatedContent}
+                        </div>
+                        <div class="notice-status">
+                            ${statusBadge}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            noticeList.innerHTML = noticeHTML;
+        }
+
+
+        async function deleteNotice(noticeNo) {
+            if (!confirm('정말로 이 공지사항을 삭제하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/notice/${noticeNo}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // 세션 쿠키 포함
+                });
+                
+                const data = await response.json();
+                
+                if (data.statusCode === 200) {
+                    showSuccess('공지사항이 삭제되었습니다.');
+                    loadNotices();
+                } else {
+                    showError('공지사항 삭제에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('공지사항 삭제 오류:', error);
+                showError('공지사항 삭제 중 오류가 발생했습니다.');
+            }
+        }
+
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function createNotice() {
+            window.location.href = '/admin/notice/detail';
+        }
+
+        function editNotice(noticeNo) {
+            window.location.href = `/admin/notice/detail?noticeNo=${noticeNo}`;
+        }
+
+        function logout() {
+            window.location.href = '/admin/logout';
+        }
+
+        // 공통 사이드바 로드
+        async function loadAdminSidebar() {
+            try {
+                const response = await fetch('/admin/common/admin-sidebar.html');
+                if (response.ok) {
+                    const sidebarHTML = await response.text();
+                    const container = document.getElementById('adminSidebarContainer');
+                    if (container) {
+                        container.innerHTML = sidebarHTML;
+                        
+                        // 사이드바 로드 후 이벤트 리스너 등록
+                        setupSidebarEvents();
+                        
+                        // 메뉴 로드
+                        loadAdminMenus();
+                    } else {
+                        console.error('Admin sidebar container not found');
+                    }
+                } else {
+                    console.error('Failed to load admin sidebar, status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading admin sidebar:', error);
+            }
+        }
+
+        // 어드민 메뉴 로드
+        async function loadAdminMenus() {
+            try {
+                const response = await fetch(`${window.location.origin}/api/admin-menus/active`);
+                
+                if (response.ok) {
+                    const menus = await response.json();
+                    renderMenus(menus);
+                } else {
+                    console.error('Failed to load menus, status:', response.status);
+                    showMenuError('메뉴를 불러오는데 실패했습니다. (상태: ' + response.status + ')');
+                }
+            } catch (error) {
+                console.error('Error loading admin menus:', error);
+                showMenuError('메뉴를 불러오는 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 메뉴 렌더링
+        function renderMenus(menus) {
+            const menuContainer = document.getElementById('sidebarMenu');
+            
+            if (!menuContainer) {
+                console.error('Menu container not found!');
+                return;
+            }
+            
+            if (menus.length === 0) {
+                menuContainer.innerHTML = '<li class="loading">등록된 메뉴가 없습니다.</li>';
+                return;
+            }
+
+            menuContainer.innerHTML = menus.map(menu => `
+                <li class="menu-item">
+                    <a class="menu-link" 
+                       href="${menu.menuUrl || '#'}" 
+                       data-menu-id="${menu.menuNo}">
+                        <span class="menu-icon">${getMenuIcon(menu.menuIcon)}</span>
+                        <span class="menu-text">${menu.menuName}</span>
+                    </a>
+                </li>
+            `).join('');
+
+        }
+
+        // 메뉴 아이콘 매핑
+        function getMenuIcon(iconName) {
+            const iconMap = {
+                'dashboard': '📊',
+                'content_copy': '📄',
+                'people': '👥',
+                'settings': '⚙️',
+                'announcement': '📢',
+                'newspaper': '📰',
+                'menu': '📋',
+                'admin_panel_settings': '👤',
+                'tune': '🎛️',
+                'history': '📜'
+            };
+            return iconMap[iconName] || '📁';
+        }
+
+        // 메뉴 오류 표시
+        function showMenuError(message) {
+            const menuContainer = document.getElementById('sidebarMenu');
+            if (menuContainer) {
+                menuContainer.innerHTML = `<li class="loading">${message}</li>`;
+            }
+        }
+
+        // 사이드바 이벤트 설정
+        function setupSidebarEvents() {
+            // 사이드바 토글 이벤트
+            const toggleBtn = document.querySelector('.sidebar-toggle');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    const sidebar = document.getElementById('adminSidebar');
+                    const mainContent = document.querySelector('.main-content');
+                    
+                    if (sidebar && mainContent) {
+                        sidebar.classList.toggle('collapsed');
+                        mainContent.classList.toggle('sidebar-collapsed');
+                    }
+                });
+            }
+        }
+
+        // 페이지 로드 시 사이드바 로드
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAdminSidebar();
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공지사항</title>
+    
+    <!-- CSS 파일들 -->
+    <link rel="stylesheet" href="./style/splide.min.css">
+    <link rel="stylesheet" href="./style/reset.css">
+    <link rel="stylesheet" href="./style/common.css">
+    <link rel="stylesheet" href="./style/sub03.css">
+    <link rel="stylesheet" href="./style/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="./style/aos.css">
+    <link rel="stylesheet" href="./style/mobile.css">
+    <link rel="icon" href="./images/ico.ico" type="image/x-icon">
+    
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .error-message {
+            text-align: center;
+            padding: 40px;
+            color: #ff6b6b;
+        }
+        
+        .error-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .retry-button {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .retry-button:hover {
+            background: #2980b9;
+        }
+        
+        .search_area {
+            margin-bottom: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .search_box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .search_select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+            min-width: 100px;
+        }
+        
+        .search_input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .search_input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .search_btn {
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .search_btn:hover {
+            background: #2980b9;
+        }
+        
+        .page-ellipsis {
+            padding: 8px 12px;
+            color: #666;
+            font-weight: bold;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .pagination a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .pagination a:hover {
+            background: #f5f5f5;
+            border-color: #3498db;
+        }
+        
+        .pagination a.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .pagination a.mso {
+            font-size: 18px;
+            min-width: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .search_box {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .search_select,
+            .search_input,
+            .search_btn {
+                width: 100%;
+            }
+            
+            .pagination {
+                gap: 3px;
+            }
+            
+            .pagination a {
+                min-width: 35px;
+                height: 35px;
+                font-size: 12px;
+            }
+            
+            .pagination a.mso {
+                font-size: 16px;
+                min-width: 35px;
+            }
+            
+            .pagination a.pc {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="colored_logo">
+    <div id="header" class="header transparent"></div>
+    <div class="body sub0302">
+        <div class="board_list center_frame">
+            <div class="head">
+                <h3>공지사항</h3>
+                <!--<div class="loc">
+                    <span class="l1">홈</span>
+                    <span class="l2">인사이트</span>
+                    <div class='dropdown'>
+                        <div class='select'>
+                            <div class='selected placeholder'> 공지사항</div>
+                            <div class="mso">keyboard_arrow_down</div>
+                        </div>
+                        <ul class='menu'>
+                            <li>option 1</li>
+                            <li>option 2</li>
+                            <li>option 3</li>
+                            <li>option 4</li>
+                        </ul>
+                    </div>
+                </div> -->
+            </div>
+            <div class="search_area">
+                <div class="search_box">
+                    <select id="searchType" class="search_select">
+                        <option value="">전체</option>
+                        <option value="noticeTitle">제목</option>
+                        <option value="noticeContent">내용</option>
+                        <option value="createUserName">작성자</option>
+                    </select>
+                    <input type="text" id="searchKeyword" class="search_input" placeholder="검색어를 입력하세요">
+                    <button type="button" id="searchBtn" class="search_btn">
+                        <i class="mso">search</i>
+                    </button>
+                </div>
+            </div>
+            <div class="board">
+                <ul id="noticeList">
+                    <!-- 공지사항 목록이 여기에 동적으로 로드됩니다 -->
+                </ul>
+            </div>
+            <div class="pagination" id="pagination">
+                <!-- 페이징 버튼들이 여기에 동적으로 생성됩니다 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 푸터 영역 -->
+    <div id="footer"></div>
+    
+    <!-- JavaScript 파일들 -->
+    <script src="./js/swiper-bundle.min.js"></script>
+    <script src="./js/splide.min.js"></script>
+    <script src="./js/aos.js"></script>
+    <script src="./js/gsap.min.js"></script>
+    <script src="./js/ScrollTrigger.min.js"></script>
+    <script src="./js/common.js"></script>
+    <button id="toTopBtn" class="to-top"><span>↑</span> TOP</button>
+    
+    <script>
+        // 전역 변수
+        let currentPage = 1;
+        const pageSize = 6; // 한 페이지당 6개 게시글
+        let totalPages = 1;
+        let currentSearchColumn = '';
+        let currentSearchValue = '';
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // 헤더와 푸터 로드
+            loadHeaderAndFooter();
+            
+            const topBtn = document.getElementById("toTopBtn");
+
+            // 스크롤 감지
+            window.addEventListener("scroll", function () {
+                const showPoint = window.innerHeight * 1.2;
+
+                if (window.scrollY > showPoint) {
+                topBtn.classList.add("show");
+                } else {
+                topBtn.classList.remove("show");
+                }
+            });
+
+            // 클릭 시 맨 위로 스크롤
+            topBtn.addEventListener("click", function () {
+                window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+                });
+            });
+
+            // 공지사항 목록 로드
+            loadNoticeList(currentPage);
+            
+            // 검색 기능 이벤트 리스너
+            setupSearchEventListeners();
+        });
+        
+        // API 기본 URL 정의
+        window.API_BASE_URL = '/api';
+        
+        // 헤더와 푸터 로드 함수
+        async function loadHeaderAndFooter() {
+            try {
+                // 헤더 로드
+                const headerResponse = await fetch('/api/header-section/html');
+                if (headerResponse.ok) {
+                    const headerHtml = await headerResponse.text();
+                    document.getElementById('header').innerHTML = headerHtml;
+                }
+                
+                // 푸터 로드
+                const footerResponse = await fetch('/api/footer-section/html');
+                if (footerResponse.ok) {
+                    const footerHtml = await footerResponse.text();
+                    document.getElementById('footer').innerHTML = footerHtml;
+                }
+                
+                // 헤더 스크립트 로드
+                const headerScriptResponse = await fetch('/api/header-section/script');
+                if (headerScriptResponse.ok) {
+                    const headerScript = await headerScriptResponse.text();
+                    const script = document.createElement('script');
+                    script.textContent = headerScript;
+                    document.head.appendChild(script);
+                    
+                    // 헤더 스크립트 로딩 후 메뉴 로드 및 호버 이벤트 초기화
+                    setTimeout(() => {
+                        loadMenusAndInitializeHover();
+                    }, 100);
+                }
+                
+                
+            } catch (error) {
+                console.error('헤더/푸터 로드 오류:', error);
+            }
+        }
+
+        // 검색 이벤트 리스너 설정
+        function setupSearchEventListeners() {
+            const searchBtn = document.getElementById('searchBtn');
+            const searchInput = document.getElementById('searchKeyword');
+            const searchType = document.getElementById('searchType');
+            
+            // 검색 버튼 클릭 이벤트
+            searchBtn.addEventListener('click', performSearch);
+            
+            // 엔터키 검색 이벤트
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            // 검색 타입 변경 시 검색어 초기화
+            searchType.addEventListener('change', function() {
+                searchInput.value = '';
+            });
+        }
+        
+        // 검색 실행 함수
+        function performSearch() {
+            const searchType = document.getElementById('searchType').value;
+            const searchKeyword = document.getElementById('searchKeyword').value.trim();
+            
+            currentSearchColumn = searchType;
+            currentSearchValue = searchKeyword;
+            currentPage = 1; // 검색 시 첫 페이지로 이동
+            
+            loadNoticeList(currentPage);
+        }
+        
+        // 공지사항 목록 로드 함수
+        async function loadNoticeList(page) {
+            // 로딩 상태 표시
+            showLoadingState();
+            
+            try {
+                // 검색 파라미터 구성
+                let url = `${window.location.origin}/api/kitms-notices/public?page=${page}&size=${pageSize}`;
+                if (currentSearchValue && currentSearchValue.trim() !== '') {
+                    url += `&searchColumn=${encodeURIComponent(currentSearchColumn)}&searchValue=${encodeURIComponent(currentSearchValue)}`;
+                }
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json; charset=utf-8',
+                        'Content-Type': 'application/json; charset=utf-8'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // 응답 헤더 확인            
+                
+                const result = await response.json();
+                if (result.statusCode === 200) {
+                    
+                    displayNoticeList(result.data.list);
+                    updatePagination(result.data.page);
+                } else {
+                    console.error('공지사항 로드 실패:', result.message);
+                    displayErrorMessage(result.message || '공지사항을 불러오는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('API 호출 오류:', error);
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    displayErrorMessage('네트워크 연결을 확인해주세요.');
+                } else {
+                    displayErrorMessage('서버와의 통신에 실패했습니다.');
+                }
+            }
+        }
+
+        // 공지사항 목록 표시 함수
+        function displayNoticeList(notices) {
+            const noticeList = document.getElementById('noticeList');
+            noticeList.innerHTML = '';
+
+            if (!notices || notices.length === 0) {
+                let message = '등록된 공지사항이 없습니다.';
+                if (currentSearchColumn && currentSearchValue) {
+                    const searchTypeText = document.getElementById('searchType').selectedOptions[0].text;
+                    message = `'${currentSearchValue}'에 대한 검색 결과가 없습니다.`;
+                }
+                noticeList.innerHTML = `<li style="text-align: center; padding: 40px; color: #666;">${message}</li>`;
+                return;
+            }
+
+            notices.forEach(notice => {
+                const li = document.createElement('li');
+                
+                // 태그 설정 (staticFlag에 따라)
+                const tagClass = notice.staticFlag === '1' ? 'tag blue' : 'tag';
+                const tagText = notice.staticFlag === '1' ? '중요공지' : '일반공지';
+                
+                // 첨부파일 아이콘 표시
+                const attachIcon = notice.fileExist === 'true' ? '<i class="mso">attach_file</i>' : '';
+                
+                li.innerHTML = `
+                    <a href="/sub0303.html?noticeNo=${notice.noticeNo}">
+                        <span class="${tagClass}">${tagText}</span>
+                        <span class="tit">${notice.noticeTitle}</span>
+                        <span class="date">${notice.createDt}</span>
+                        ${attachIcon}
+                    </a>
+                `;
+                
+                noticeList.appendChild(li);
+            });
+        }
+
+        // 페이징 UI 업데이트 함수
+        function updatePagination(pageInfo) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            if (!pageInfo || pageInfo.totalPages <= 1) {
+                return;
+            }
+
+            totalPages = pageInfo.totalPages;
+            const currentPageNum = pageInfo.currentPage || 1;
+            
+
+            // 이전 페이지 버튼들
+            if (currentPageNum > 1) {
+                pagination.innerHTML += `
+                    <a href="#" class="mso ll" onclick="goToPage(1)" title="첫 페이지">keyboard_double_arrow_left</a>
+                    <a href="#" class="mso l" onclick="goToPage(${currentPageNum - 1})" title="이전 페이지">keyboard_arrow_left</a>
+                `;
+            }
+
+            // 페이지 번호 버튼들
+            const startPage = Math.max(1, currentPageNum - 2);
+            const endPage = Math.min(totalPages, currentPageNum + 2);
+
+            // 시작 페이지가 1보다 크면 "..." 표시
+            if (startPage > 1) {
+                pagination.innerHTML += `<span class="page-ellipsis">...</span>`;
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const activeClass = i === currentPageNum ? 'active' : '';
+                const pcClass = i > 3 ? 'pc' : ''; // 모바일에서 4페이지부터 숨김
+                pagination.innerHTML += `<a href="#" class="page ${activeClass} ${pcClass}" onclick="goToPage(${i})">${i}</a>`;
+            }
+
+            // 끝 페이지가 totalPages보다 작으면 "..." 표시
+            if (endPage < totalPages) {
+                pagination.innerHTML += `<span class="page-ellipsis">...</span>`;
+            }
+
+            // 다음 페이지 버튼들
+            if (currentPageNum < totalPages) {
+                pagination.innerHTML += `
+                    <a href="#" class="mso r" onclick="goToPage(${currentPageNum + 1})" title="다음 페이지">keyboard_arrow_right</a>
+                    <a href="#" class="mso rr" onclick="goToPage(${totalPages})" title="마지막 페이지">keyboard_double_arrow_right</a>
+                `;
+            }
+        }
+
+        // 페이지 이동 함수
+        function goToPage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadNoticeList(page);
+            
+            // 페이지 상단으로 스크롤
+            document.querySelector('.board_list').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 로딩 상태 표시 함수
+        function showLoadingState() {
+            const noticeList = document.getElementById('noticeList');
+            noticeList.innerHTML = `
+                <li style="text-align: center; padding: 40px;">
+                    <div class="loading-spinner"></div>
+                    <div style="margin-top: 10px; color: #666;">공지사항을 불러오는 중...</div>
+                </li>
+            `;
+        }
+
+        // 에러 메시지 표시 함수
+        function displayErrorMessage(message) {
+            const noticeList = document.getElementById('noticeList');
+            noticeList.innerHTML = `
+                <li class="error-message">
+                    <i class="mso error-icon">error</i>
+                    ${message}
+                    <button onclick="loadNoticeList(currentPage)" class="retry-button">
+                        다시 시도
+                    </button>
+                </li>
+            `;
+        }
+        
+        // 메뉴 로드 함수
+        async function loadMenus() {
+            try {
+                const response = await fetch(`${window.API_BASE_URL}/kitms-menus/tree`);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.status === 'OK' && result.data.menuTreeJson) {
+                        renderMenus(result.data.menuTreeJson);
+                    }
+                } else {
+                    console.error('메뉴 API 응답 오류:', response.status);
+                }
+            } catch (error) {
+                console.error('메뉴 로드 오류:', error);
+                // 오류 시 기본 메뉴 표시
+                renderDefaultMenus();
+            }
+        }
+        
+        // 기본 메뉴 렌더링 (API 실패 시)
+        function renderDefaultMenus() {
+            const defaultMenus = [
+                {
+                    menuName: '케이원소개',
+                    menuUrl: './cms-template.html?page=sub0101',
+                    children: [
+                        { menuName: '회사소개', menuUrl: './cms-template.html?page=sub0101' },
+                        { menuName: '케이원연혁', menuUrl: './cms-template.html?page=sub0102' },
+                        { menuName: 'CEO 인사말', menuUrl: './cms-template.html?page=sub0103' },
+                        { menuName: '윤리경영', menuUrl: './cms-template.html?page=sub0104' },
+                        { menuName: '조직구성', menuUrl: './cms-template.html?page=sub0105' },
+                        { menuName: '인증현황', menuUrl: './cms-template.html?page=sub0106' },
+                        { menuName: '오시는 길', menuUrl: './cms-template.html?page=sub0107' }
+                    ]
+                },
+                {
+                    menuName: '사업영역',
+                    menuUrl: './cms-template.html?page=sub0201',
+                    children: [
+                        { menuName: '사업하기', menuUrl: './cms-template.html?page=sub0201' },
+                        { menuName: '문의하기', menuUrl: './cms-template.html?page=sub0202' }
+                    ]
+                },
+                {
+                    menuName: '홍보센터',
+                    menuUrl: './cms-template.html?page=sub0301',
+                    children: [
+                        { menuName: '보도자료', menuUrl: './cms-template.html?page=sub0301' },
+                        { menuName: '공지사항', menuUrl: './cms-template.html?page=sub0302' }
+                    ]
+                },
+                {
+                    menuName: '채용공고',
+                    menuUrl: './cms-template.html?page=sub0401',
+                    children: [
+                        { menuName: '채용공고', menuUrl: './cms-template.html?page=sub0401' },
+                        { menuName: '인재상', menuUrl: './cms-template.html?page=sub0402' }
+                    ]
+                }
+            ];
+            renderMenus(defaultMenus);
+        }
+        
+        // 메뉴 렌더링 함수
+        function renderMenus(menuTree) {
+            // 데스크톱 메뉴 렌더링
+            renderDesktopMenus(menuTree);
+            
+            // 모바일 메뉴 렌더링
+            renderMobileMenus(menuTree);
+        }
+        
+        // 데스크톱 메뉴 렌더링
+        function renderDesktopMenus(menuTree) {
+            const gnbDepth1 = document.querySelector('.header-gnb .gnb-depth-1');
+            if (!gnbDepth1) {
+                console.error('데스크톱 메뉴 컨테이너를 찾을 수 없습니다.');
+                return;
+            }
+            
+            // 기존 메뉴 제거
+            gnbDepth1.innerHTML = '';
+            
+            menuTree.forEach(menu => {
+                // is_active가 'N'이면 건너뛰기
+                if (menu.isActive === 'N') {
+                    return;
+                }
+                
+                const li = document.createElement('li');
+                li.className = 'depth-1';
+                
+                // 1depth 링크
+                const link = document.createElement('a');
+                link.href = menu.menuUrl || '#';
+                link.className = 'depth-1-link hover-underline';
+                if (menu.isNewWindow === 'Y') {
+                    link.target = '_blank';
+                }
+                
+                const span = document.createElement('span');
+                span.textContent = menu.menuName;
+                link.appendChild(span);
+                
+                // 2depth 메뉴가 있는 경우
+                if (menu.children && menu.children.length > 0) {
+                    const depthItem = document.createElement('div');
+                    depthItem.className = 'depth-item';
+                    
+                    const ul = document.createElement('ul');
+                    ul.className = 'gnb-depth-2';
+                    
+                    menu.children.forEach(child => {
+                        // 자식 메뉴도 is_active가 'N'이면 건너뛰기
+                        if (child.isActive === 'N') {
+                            return;
+                        }
+                        
+                        const childLi = document.createElement('li');
+                        childLi.className = 'depth-2';
+                        
+                        const childLink = document.createElement('a');
+                        childLink.href = child.menuUrl || '#';
+                        childLink.className = 'depth-2-link';
+                        if (child.isNewWindow === 'Y') {
+                            childLink.target = '_blank';
+                        }
+                        
+                        const childSpan = document.createElement('span');
+                        childSpan.textContent = child.menuName;
+                        childLink.appendChild(childSpan);
+                        
+                        childLi.appendChild(childLink);
+                        ul.appendChild(childLi);
+                    });
+                    
+                    // 자식 메뉴가 있는 경우에만 depth-item 추가
+                    if (ul.children.length > 0) {
+                        depthItem.appendChild(ul);
+                        li.appendChild(link);
+                        li.appendChild(depthItem);
+                    } else {
+                        li.appendChild(link);
+                    }
+                } else {
+                    li.appendChild(link);
+                }
+                
+                gnbDepth1.appendChild(li);
+            });
+        }
+        
+        // 모바일 메뉴 렌더링
+        function renderMobileMenus(menuTree) {
+            const mobileGnbDepth1 = document.querySelector('.sidebar .gnb-depth-1');
+            if (!mobileGnbDepth1) {
+                console.error('모바일 메뉴 컨테이너를 찾을 수 없습니다.');
+                return;
+            }
+            
+            // 기존 메뉴 제거
+            mobileGnbDepth1.innerHTML = '';
+            
+            menuTree.forEach(menu => {
+                // is_active가 'N'이면 건너뛰기
+                if (menu.isActive === 'N') {
+                    return;
+                }
+                
+                const li = document.createElement('li');
+                li.className = 'depth-1';
+                
+                // 1depth 링크
+                const link = document.createElement('a');
+                link.href = menu.menuUrl || '#';
+                link.className = 'depth-1-link';
+                if (menu.isNewWindow === 'Y') {
+                    link.target = '_blank';
+                }
+                
+                const span = document.createElement('span');
+                span.textContent = menu.menuName;
+                link.appendChild(span);
+                
+                // 2depth 메뉴가 있는 경우
+                if (menu.children && menu.children.length > 0) {
+                    const ul = document.createElement('ul');
+                    ul.className = 'gnb-depth-2';
+                    
+                    menu.children.forEach(child => {
+                        // 자식 메뉴도 is_active가 'N'이면 건너뛰기
+                        if (child.isActive === 'N') {
+                            return;
+                        }
+                        
+                        const childLi = document.createElement('li');
+                        childLi.className = 'depth-2';
+                        
+                        const childLink = document.createElement('a');
+                        childLink.href = child.menuUrl || '#';
+                        childLink.className = 'depth-2-link';
+                        if (child.isNewWindow === 'Y') {
+                            childLink.target = '_blank';
+                        }
+                        
+                        const childSpan = document.createElement('span');
+                        childSpan.textContent = child.menuName;
+                        childLink.appendChild(childSpan);
+                        
+                        childLi.appendChild(childLink);
+                        ul.appendChild(childLi);
+                    });
+                    
+                    // 자식 메뉴가 있는 경우에만 ul 추가
+                    if (ul.children.length > 0) {
+                        li.appendChild(link);
+                        li.appendChild(ul);
+                    } else {
+                        li.appendChild(link);
+                    }
+                } else {
+                    li.appendChild(link);
+                }
+                
+                mobileGnbDepth1.appendChild(li);
+            });
+        }
+        
+        // 메뉴 로드 및 호버 이벤트 초기화
+        async function loadMenusAndInitializeHover() {
+            try {
+                await loadMenus();
+                
+                // 호버 이벤트 초기화
+                initializeHeaderHover();
+                
+            } catch (error) {
+                console.error('메뉴 로드 및 호버 초기화 오류:', error);
+                // 오류가 발생해도 호버 이벤트는 초기화
+                initializeHeaderHover();
+            }
+        }
+        
+        // 헤더 호버 이벤트 초기화
+        function initializeHeaderHover() {
+            const header = document.querySelector('.header');
+            const depth1Items = document.querySelectorAll('.header .header-gnb .gnb-depth-1 .depth-1');
+            
+            depth1Items.forEach(item => {
+                const depthItem = item.querySelector('.depth-item');
+                if (depthItem) {
+                    item.addEventListener('mouseenter', function() {
+                        // 헤더에 open 클래스 추가
+                        if (header) {
+                            header.classList.add('open');
+                        }
+                        item.classList.add('current');
+                        
+                        // 하위메뉴 표시
+                        depthItem.style.visibility = 'visible';
+                        depthItem.style.opacity = '1';
+                        
+                        // 높이 설정
+                        const targetMenu = item.querySelector('.gnb-depth-2');
+                        if (targetMenu) {
+                            const targetHeight = targetMenu.getBoundingClientRect().height;
+                            depthItem.style.height = `${targetHeight}px`;
+                        }
+                    });
+                    
+                    item.addEventListener('mouseleave', function() {
+                        // 헤더에서 open 클래스 제거
+                        if (header) {
+                            header.classList.remove('open');
+                        }
+                        item.classList.remove('current');
+                        
+                        // 하위메뉴 숨김
+                        depthItem.style.visibility = 'hidden';
+                        depthItem.style.opacity = '0';
+                        depthItem.style.height = '0px';
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${notice?.noticeTitle ?: '공지사항 상세'}">공지사항 상세</title>
+    
+    <!-- CSS 파일들 -->
+    <link rel="stylesheet" href="./style/splide.min.css">
+    <link rel="stylesheet" href="./style/reset.css">
+    <link rel="stylesheet" href="./style/common.css">
+    <link rel="stylesheet" href="./style/sub03.css">
+    <link rel="stylesheet" href="./style/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="./style/aos.css">
+    <link rel="stylesheet" href="./style/mobile.css">
+    <link rel="icon" href="./images/ico.ico" type="image/x-icon">
+    
+    <style>
+        /* 로딩 및 오류 상태 스타일 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            text-align: center;
+            padding: 40px;
+            color: #ff6b6b;
+        }
+        
+        .error-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .retry-button {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .retry-button:hover {
+            background: #2980b9;
+        }
+        
+        /* 첨부파일 스타일 */
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0 10px 0;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        
+        .attachment-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        
+        .attachment-icon {
+            font-size: 20px;
+            color: #666;
+        }
+        
+        .attachment-details {
+            flex: 1;
+        }
+        
+        .attachment-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+        
+        .attachment-size {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .attachment-download {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        
+        .attachment-download:hover {
+            background: #0056b3;
+        }
+        
+        .no-attachments {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+            font-style: italic;
+        }
+        
+        /* 이미지 보안 스타일 */
+        img {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+        }
+    </style>
+</head>
+<body class="colored_logo">
+    <!-- 헤더 영역 -->
+    <div id="header" class="transparent"></div>
+    
+    <!-- 메인 콘텐츠 -->
+    <div class="body sub03011">
+        <!-- 로딩 상태 -->
+        <div id="loadingState" class="loading" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>공지사항을 불러오는 중...</p>
+        </div>
+        
+        <!-- 오류 상태 -->
+        <div id="errorState" class="error-message" style="display: none;">
+            <span class="error-icon">⚠️</span>
+            <p id="errorMessage">공지사항을 불러오는데 실패했습니다.</p>
+            <button class="retry-button" onclick="loadNoticeDetail()">다시 시도</button>
+        </div>
+        
+        <!-- 공지사항 상세 내용 -->
+        <div id="noticeDetail" style="display: none;">
+            <!-- 공지사항 헤더 -->
+            <div class="pgintro">
+                <h3 id="noticeTitle"></h3>
+                <p id="createDt"></p>
+            </div>
+            
+            <!-- 공지사항 내용 -->
+            <div class="content_wrap center_frame">
+                <div class="content">
+                    <div class="text_area" id="noticeContent">
+                        <!-- 공지사항 내용이 여기에 표시됩니다 -->
+                    </div>
+                    
+                    <!-- 첨부파일 -->
+                    <div class="bot" id="attachmentsSection" style="display: none;">
+                        <div id="attachmentList">
+                            <!-- 첨부파일 목록이 여기에 동적으로 추가됩니다 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 구분선 -->
+            <div class="border"></div>
+            
+            <!-- 목록으로 버튼 -->
+            <div class="moreline">
+                <a href="/sub0302.html" class="more">LIST</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 푸터 영역 -->
+    <div id="footer"></div>
+    
+    <!-- TOP 버튼 -->
+    <button id="toTopBtn" class="to-top"><span>↑</span> TOP</button>
+    
+    <!-- JavaScript 파일들 -->
+    <script src="./js/swiper-bundle.min.js"></script>
+    <script src="./js/splide.min.js"></script>
+    <script src="./js/aos.js"></script>
+    <script src="./js/gsap.min.js"></script>
+    <script src="./js/ScrollTrigger.min.js"></script>
+    <script src="./js/common.js"></script>
+    
+    <script>
+        // 전역 변수
+        let currentNoticeNo = null;
+        
+        // API 기본 URL 정의
+        window.API_BASE_URL = '/api';
+        
+        document.addEventListener("DOMContentLoaded", async function () {
+            // URL에서 noticeNo 파라미터 추출
+            const urlParams = new URLSearchParams(window.location.search);
+            currentNoticeNo = urlParams.get('noticeNo');
+            
+            if (!currentNoticeNo) {
+                showError('공지사항 번호가 없습니다.');
+                return;
+            }
+            
+            // 보안 이미지 URL 로드
+            await loadSecureImageUrls();
+            
+            // 이미지 보안 기능 추가
+            addImageSecurity();
+            
+            // 헤더와 푸터 로드
+            loadHeaderAndFooter();
+            
+            // 공지사항 상세 정보 로드
+            loadNoticeDetail();
+            
+            // TOP 버튼 이벤트
+            setupTopButton();
+        });
+        
+        // 헤더와 푸터 로드 함수
+        async function loadHeaderAndFooter() {
+            try {
+                // 헤더 로드
+                const headerResponse = await fetch('/api/header-section/html');
+                if (headerResponse.ok) {
+                    const headerHtml = await headerResponse.text();
+                    document.getElementById('header').innerHTML = headerHtml;
+                }
+                
+                // 푸터 로드
+                const footerResponse = await fetch('/api/footer-section/html');
+                if (footerResponse.ok) {
+                    const footerHtml = await footerResponse.text();
+                    document.getElementById('footer').innerHTML = footerHtml;
+                }
+                
+                // 헤더 스크립트 로드
+                const headerScriptResponse = await fetch('/api/header-section/script');
+                if (headerScriptResponse.ok) {
+                    const headerScript = await headerScriptResponse.text();
+                    const script = document.createElement('script');
+                    script.textContent = headerScript;
+                    document.head.appendChild(script);
+                    
+                    // 헤더 스크립트 로딩 후 메뉴 로드 및 호버 이벤트 초기화
+                    setTimeout(() => {
+                        loadMenusAndInitializeHover();
+                    }, 100);
+                }
+                
+                
+            } catch (error) {
+                console.error('헤더/푸터 로드 오류:', error);
+            }
+        }
+        
+        // TOP 버튼 설정
+        function setupTopButton() {
+            const topBtn = document.getElementById("toTopBtn");
+            
+            // 스크롤 감지
+            window.addEventListener("scroll", function () {
+                const showPoint = window.innerHeight * 1.2;
+                
+                if (window.scrollY > showPoint) {
+                    topBtn.classList.add("show");
+                } else {
+                    topBtn.classList.remove("show");
+                }
+            });
+            
+            // 클릭 시 맨 위로 스크롤
+            topBtn.addEventListener("click", function () {
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+            });
+        }
+        
+        // 공지사항 상세 정보 로드
+        async function loadNoticeDetail() {
+            try {
+                showLoading();
+                
+                const response = await fetch(`${API_BASE_URL}/notice/${currentNoticeNo}`);
+                const result = await response.json();
+                
+                if (result.statusCode === 200) {
+                    const notice = result.data?.resultInfo || result.data || result.resultInfo || result;
+                    await displayNoticeDetail(notice);
+                    loadAttachments(currentNoticeNo);
+                } else {
+                    showError(result.message || '공지사항을 불러오는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('공지사항 로드 오류:', error);
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    showError('네트워크 연결을 확인해주세요.');
+                } else {
+                    showError('서버와의 통신에 실패했습니다.');
+                }
+            }
+        }
+        
+        // 공지사항 상세 정보 표시
+        async function displayNoticeDetail(notice) {
+            // 제목 설정
+            document.getElementById('noticeTitle').textContent = notice.noticeTitle || '제목 없음';
+            
+            // 작성일 설정
+            const createDt = notice.createDt || notice.create_dt;
+            if (createDt) {
+                document.getElementById('createDt').textContent = formatDate(createDt);
+            }
+            
+            // 내용 설정
+            const contentElement = document.getElementById('noticeContent');
+            contentElement.innerHTML = notice.noticeContent || '내용이 없습니다.';
+            
+            // 페이지 제목 설정
+            document.title = notice.noticeTitle + ' - 공지사항';
+            
+            // 보안 이미지 처리 적용
+            await updateAllImagePaths();
+            
+            hideLoading();
+            document.getElementById('noticeDetail').style.display = 'block';
+        }
+        
+        // 첨부파일 로드
+        async function loadAttachments(noticeNo) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitms-attaches/list/KITMS_NOTICE/${noticeNo}`);
+                const result = await response.json();
+                
+                if (result.statusCode === 200 && result.data) {
+                    const attachments = Array.isArray(result.data.list) ? result.data.list : 
+                                      Array.isArray(result.data) ? result.data : [result.data];
+                    
+                    displayAttachments(attachments);
+                }
+            } catch (error) {
+                console.error('첨부파일 로드 오류:', error);
+            }
+        }
+        
+        // 첨부파일 표시 (sub03011.html 스타일에 맞게)
+        function displayAttachments(attachments) {
+            const attachmentsSection = document.getElementById('attachmentsSection');
+            const attachmentList = document.getElementById('attachmentList');
+            
+            if (!attachments || attachments.length === 0) {
+                attachmentsSection.style.display = 'none';
+                return;
+            }
+            
+            attachmentList.innerHTML = '';
+            
+            attachments.forEach(attach => {
+                const fileName = attach.attachFileName || attach.fileName || 'unknown_file';
+                const attachNo = attach.attachNo;
+                
+                const fileIcon = getFileIcon(fileName);
+                
+                // sub03011.html의 구조에 맞게 생성
+                const attachmentDiv = document.createElement('div');
+                attachmentDiv.className = 'attachment-item';
+                attachmentDiv.innerHTML = `
+                    <a href="#" class="file" onclick="downloadAttachment(${attachNo}); return false;">
+                        <img src="./images/img_jpg.png" alt="${fileIcon}">
+                        <span>${fileName}</span>
+                    </a>
+                    <a href="#" class="download" onclick="downloadAttachment(${attachNo}); return false;">
+                        <span>다운로드</span>
+                        <i class="mso">vertical_align_bottom</i>
+                    </a>
+                `;
+                
+                attachmentList.appendChild(attachmentDiv);
+            });
+            
+            attachmentsSection.style.display = 'block';
+        }
+        
+        // 파일 아이콘 반환
+        function getFileIcon(fileName) {
+            if (!fileName) return '📎';
+            
+            const extension = fileName.split('.').pop().toLowerCase();
+            const iconMap = {
+                'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️',
+                'pdf': '📄',
+                'doc': '📝', 'docx': '📝',
+                'xls': '📊', 'xlsx': '📊',
+                'ppt': '📽️', 'pptx': '📽️',
+                'zip': '📦', 'rar': '📦',
+                'mp4': '🎥', 'avi': '🎥', 'mov': '🎥',
+                'mp3': '🎵', 'wav': '🎵'
+            };
+            return iconMap[extension] || '📎';
+        }
+        
+        // 첨부파일 다운로드
+        function downloadAttachment(attachNo) {
+            window.open(`${API_BASE_URL}/kitms-attaches/file-download/${attachNo}`, '_blank');
+        }
+        
+        // 날짜 포맷팅
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            } catch (error) {
+                return dateString;
+            }
+        }
+        
+        // 로딩 상태 표시
+        function showLoading() {
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('errorState').style.display = 'none';
+            document.getElementById('noticeDetail').style.display = 'none';
+        }
+        
+        // 오류 상태 표시
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            document.getElementById('noticeDetail').style.display = 'none';
+        }
+        
+        // 로딩 숨기기
+        function hideLoading() {
+            document.getElementById('loadingState').style.display = 'none';
+        }
+        
+        // 보안 이미지 URL 매핑
+        let secureImageUrls = {};
+         
+        // 보안 이미지 URL 로드
+        async function loadSecureImageUrls() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/secure-images/mapping`);
+                if (response.ok) {
+                    secureImageUrls = await response.json();
+                }
+            } catch (error) {
+                console.error('보안 이미지 URL 로드 오류:', error);
+            }
+        }
+        
+        // 보안 이미지 URL 가져오기 (동적 생성 지원)
+        async function getSecureImageUrl(fileName) {
+            // 이미 매핑에 있으면 바로 반환
+            if (secureImageUrls[fileName]) {
+                return secureImageUrls[fileName];
+            }
+            
+            // 없으면 동적으로 토큰 생성
+            try {
+                const response = await fetch(`${API_BASE_URL}/secure-images/generate/${fileName}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    secureImageUrls[fileName] = data.secureUrl;
+                    return data.secureUrl;
+                }
+            } catch (error) {
+                console.warn(`이미지 토큰 생성 실패: ${fileName}`, error);
+            }
+            
+            // 실패 시 기본 경로 반환
+            return `./images/${fileName}`;
+        }
+        
+        // 모든 이미지 경로를 보안 URL로 업데이트
+        async function updateAllImagePaths() {
+            // 공지사항 내용의 이미지들 처리
+            const contentImages = document.querySelectorAll('#noticeContent img');
+            for (const img of contentImages) {
+                const src = img.src;
+                if (src && src.includes('/images/')) {
+                    const fileName = src.split('/images/')[1];
+                    img.src = await getSecureImageUrl(fileName);
+                }
+            }
+            
+            // 첨부파일 아이콘 이미지들
+            const attachmentImages = document.querySelectorAll('.attachment-item img');
+            for (const img of attachmentImages) {
+                const src = img.src;
+                if (src && src.includes('img_jpg.png')) {
+                    img.src = await getSecureImageUrl('img_jpg.png');
+                }
+            }
+            
+            // 파비콘
+            const favicon = document.querySelector('link[rel="icon"]');
+            if (favicon) {
+                favicon.href = await getSecureImageUrl('ico.ico');
+            }
+        }
+        
+        // 간단한 이미지 보안 기능
+        function addImageSecurity() {
+            // 모든 이미지에 우클릭 방지
+            document.addEventListener('contextmenu', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            
+            // 모든 이미지에 드래그 방지
+            document.addEventListener('dragstart', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        }
+        
+        // 메뉴 로드 함수
+        async function loadMenus() {
+            try {
+                const response = await fetch(`${window.API_BASE_URL}/kitms-menus/tree`);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.status === 'OK' && result.data.menuTreeJson) {
+                        renderMenus(result.data.menuTreeJson);
+                    }
+                } else {
+                    console.error('메뉴 API 응답 오류:', response.status);
+                }
+            } catch (error) {
+                console.error('메뉴 로드 오류:', error);
+                // 오류 시 기본 메뉴 표시
+                renderDefaultMenus();
+            }
+        }
+        
+        // 기본 메뉴 렌더링 (API 실패 시)
+        function renderDefaultMenus() {
+            const defaultMenus = [
+                {
+                    menuName: '케이원소개',
+                    menuUrl: './cms-template.html?page=sub0101',
+                    children: [
+                        { menuName: '회사소개', menuUrl: './cms-template.html?page=sub0101' },
+                        { menuName: '케이원연혁', menuUrl: './cms-template.html?page=sub0102' },
+                        { menuName: 'CEO 인사말', menuUrl: './cms-template.html?page=sub0103' },
+                        { menuName: '윤리경영', menuUrl: './cms-template.html?page=sub0104' },
+                        { menuName: '조직구성', menuUrl: './cms-template.html?page=sub0105' },
+                        { menuName: '인증현황', menuUrl: './cms-template.html?page=sub0106' },
+                        { menuName: '오시는 길', menuUrl: './cms-template.html?page=sub0107' }
+                    ]
+                },
+                {
+                    menuName: '사업영역',
+                    menuUrl: './cms-template.html?page=sub0201',
+                    children: [
+                        { menuName: '사업하기', menuUrl: './cms-template.html?page=sub0201' },
+                        { menuName: '문의하기', menuUrl: './cms-template.html?page=sub0202' }
+                    ]
+                },
+                {
+                    menuName: '홍보센터',
+                    menuUrl: './cms-template.html?page=sub0301',
+                    children: [
+                        { menuName: '보도자료', menuUrl: './cms-template.html?page=sub0301' },
+                        { menuName: '공지사항', menuUrl: './cms-template.html?page=sub0302' }
+                    ]
+                },
+                {
+                    menuName: '채용공고',
+                    menuUrl: './cms-template.html?page=sub0401',
+                    children: [
+                        { menuName: '채용공고', menuUrl: './cms-template.html?page=sub0401' },
+                        { menuName: '인재상', menuUrl: './cms-template.html?page=sub0402' }
+                    ]
+                }
+            ];
+            renderMenus(defaultMenus);
+        }
+        
+        // 메뉴 렌더링 함수
+        function renderMenus(menuTree) {
+            // 데스크톱 메뉴 렌더링
+            renderDesktopMenus(menuTree);
+            
+            // 모바일 메뉴 렌더링
+            renderMobileMenus(menuTree);
+        }
+        
+        // 데스크톱 메뉴 렌더링
+        function renderDesktopMenus(menuTree) {
+            const gnbDepth1 = document.querySelector('.header-gnb .gnb-depth-1');
+            if (!gnbDepth1) {
+                console.error('데스크톱 메뉴 컨테이너를 찾을 수 없습니다.');
+                return;
+            }
+            
+            // 기존 메뉴 제거
+            gnbDepth1.innerHTML = '';
+            
+            menuTree.forEach(menu => {
+                // is_active가 'N'이면 건너뛰기
+                if (menu.isActive === 'N') {
+                    return;
+                }
+                
+                const li = document.createElement('li');
+                li.className = 'depth-1';
+                
+                // 1depth 링크
+                const link = document.createElement('a');
+                link.href = menu.menuUrl || '#';
+                link.className = 'depth-1-link hover-underline';
+                if (menu.isNewWindow === 'Y') {
+                    link.target = '_blank';
+                }
+                
+                const span = document.createElement('span');
+                span.textContent = menu.menuName;
+                link.appendChild(span);
+                
+                // 2depth 메뉴가 있는 경우
+                if (menu.children && menu.children.length > 0) {
+                    const depthItem = document.createElement('div');
+                    depthItem.className = 'depth-item';
+                    
+                    const ul = document.createElement('ul');
+                    ul.className = 'gnb-depth-2';
+                    
+                    menu.children.forEach(child => {
+                        // 자식 메뉴도 is_active가 'N'이면 건너뛰기
+                        if (child.isActive === 'N') {
+                            return;
+                        }
+                        
+                        const childLi = document.createElement('li');
+                        childLi.className = 'depth-2';
+                        
+                        const childLink = document.createElement('a');
+                        childLink.href = child.menuUrl || '#';
+                        childLink.className = 'depth-2-link';
+                        if (child.isNewWindow === 'Y') {
+                            childLink.target = '_blank';
+                        }
+                        
+                        const childSpan = document.createElement('span');
+                        childSpan.textContent = child.menuName;
+                        childLink.appendChild(childSpan);
+                        
+                        childLi.appendChild(childLink);
+                        ul.appendChild(childLi);
+                    });
+                    
+                    // 자식 메뉴가 있는 경우에만 depth-item 추가
+                    if (ul.children.length > 0) {
+                        depthItem.appendChild(ul);
+                        li.appendChild(link);
+                        li.appendChild(depthItem);
+                    } else {
+                        li.appendChild(link);
+                    }
+                } else {
+                    li.appendChild(link);
+                }
+                
+                gnbDepth1.appendChild(li);
+            });
+        }
+        
+        // 모바일 메뉴 렌더링
+        function renderMobileMenus(menuTree) {
+            const mobileGnbDepth1 = document.querySelector('.sidebar .gnb-depth-1');
+            if (!mobileGnbDepth1) {
+                console.error('모바일 메뉴 컨테이너를 찾을 수 없습니다.');
+                return;
+            }
+            
+            // 기존 메뉴 제거
+            mobileGnbDepth1.innerHTML = '';
+            
+            menuTree.forEach(menu => {
+                // is_active가 'N'이면 건너뛰기
+                if (menu.isActive === 'N') {
+                    return;
+                }
+                
+                const li = document.createElement('li');
+                li.className = 'depth-1';
+                
+                // 1depth 링크
+                const link = document.createElement('a');
+                link.href = menu.menuUrl || '#';
+                link.className = 'depth-1-link';
+                if (menu.isNewWindow === 'Y') {
+                    link.target = '_blank';
+                }
+                
+                const span = document.createElement('span');
+                span.textContent = menu.menuName;
+                link.appendChild(span);
+                
+                // 2depth 메뉴가 있는 경우
+                if (menu.children && menu.children.length > 0) {
+                    const ul = document.createElement('ul');
+                    ul.className = 'gnb-depth-2';
+                    
+                    menu.children.forEach(child => {
+                        // 자식 메뉴도 is_active가 'N'이면 건너뛰기
+                        if (child.isActive === 'N') {
+                            return;
+                        }
+                        
+                        const childLi = document.createElement('li');
+                        childLi.className = 'depth-2';
+                        
+                        const childLink = document.createElement('a');
+                        childLink.href = child.menuUrl || '#';
+                        childLink.className = 'depth-2-link';
+                        if (child.isNewWindow === 'Y') {
+                            childLink.target = '_blank';
+                        }
+                        
+                        const childSpan = document.createElement('span');
+                        childSpan.textContent = child.menuName;
+                        childLink.appendChild(childSpan);
+                        
+                        childLi.appendChild(childLink);
+                        ul.appendChild(childLi);
+                    });
+                    
+                    // 자식 메뉴가 있는 경우에만 ul 추가
+                    if (ul.children.length > 0) {
+                        li.appendChild(link);
+                        li.appendChild(ul);
+                    } else {
+                        li.appendChild(link);
+                    }
+                } else {
+                    li.appendChild(link);
+                }
+                
+                mobileGnbDepth1.appendChild(li);
+            });
+        }
+        
+        // 메뉴 로드 및 호버 이벤트 초기화
+        async function loadMenusAndInitializeHover() {
+            try {
+                await loadMenus();
+                
+                // 호버 이벤트 초기화
+                initializeHeaderHover();
+                
+            } catch (error) {
+                console.error('메뉴 로드 및 호버 초기화 오류:', error);
+                // 오류가 발생해도 호버 이벤트는 초기화
+                initializeHeaderHover();
+            }
+        }
+        
+        // 헤더 호버 이벤트 초기화
+        function initializeHeaderHover() {
+            const header = document.querySelector('.header');
+            const depth1Items = document.querySelectorAll('.header .header-gnb .gnb-depth-1 .depth-1');
+            
+            depth1Items.forEach(item => {
+                const depthItem = item.querySelector('.depth-item');
+                if (depthItem) {
+                    item.addEventListener('mouseenter', function() {
+                        // 헤더에 open 클래스 추가
+                        if (header) {
+                            header.classList.add('open');
+                        }
+                        item.classList.add('current');
+                        
+                        // 하위메뉴 표시
+                        depthItem.style.visibility = 'visible';
+                        depthItem.style.opacity = '1';
+                        
+                        // 높이 설정
+                        const targetMenu = item.querySelector('.gnb-depth-2');
+                        if (targetMenu) {
+                            const targetHeight = targetMenu.getBoundingClientRect().height;
+                            depthItem.style.height = `${targetHeight}px`;
+                        }
+                    });
+                    
+                    item.addEventListener('mouseleave', function() {
+                        // 헤더에서 open 클래스 제거
+                        if (header) {
+                            header.classList.remove('open');
+                        }
+                        item.classList.remove('current');
+                        
+                        // 하위메뉴 숨김
+                        depthItem.style.visibility = 'hidden';
+                        depthItem.style.opacity = '0';
+                        depthItem.style.height = '0px';
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

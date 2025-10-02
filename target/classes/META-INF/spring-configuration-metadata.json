@@ -1,0 +1,27 @@
+{
+  "groups": [
+    {
+      "name": "application",
+      "type": "com.kone.kitms.config.ApplicationProperties",
+      "sourceType": "com.kone.kitms.config.ApplicationProperties"
+    },
+    {
+      "name": "image-paths",
+      "type": "com.kone.kitms.service.ImagePathService",
+      "sourceType": "com.kone.kitms.service.ImagePathService"
+    }
+  ],
+  "properties": [
+    {
+      "name": "image-paths.default-paths",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "com.kone.kitms.service.ImagePathService"
+    },
+    {
+      "name": "image-paths.file-mappings",
+      "type": "java.util.Map<java.lang.String,java.lang.String>",
+      "sourceType": "com.kone.kitms.service.ImagePathService"
+    }
+  ],
+  "hints": []
+}

@@ -1,0 +1,32 @@
+# 이미지 경로 설정 파일
+# 폴더 구조가 변경되어도 이 파일만 수정하면 됩니다.
+
+image-paths:
+  # 기본 이미지 경로들
+  default-paths:
+    - "static/images/"
+    - "static/images/logos/"
+    - "static/images/slides/"
+    - "static/images/awards/"
+    - "static/images/thumbs/"
+    - "static/images/icons/"
+    - "static/images/backgrounds/"
+    - "static/images/banners/"
+    - "static/images/gallery/"
+  
+  # 특정 파일들의 경로 매핑
+  file-mappings:
+    "kone_logo.svg": "static/images/logos/"
+    "slide_main_1-1.png": "static/images/slides/"
+    "slide_main_1-2.png": "static/images/slides/"
+    "slide_main_1-3.png": "static/images/slides/"
+    "slide-main2-1.png": "static/images/slides/"
+    "slide-main2-2.png": "static/images/slides/"
+    "slide-main2-3.png": "static/images/slides/"
+    "slide-main2-4.png": "static/images/slides/"
+    "area4-award1.png": "static/images/awards/"
+    "area4-award2.png": "static/images/awards/"
+    "area4-award3.png": "static/images/awards/"
+    "area3-items-all.png": "static/images/"
+    "area5-thumb1.png": "static/images/thumbs/"
+    "ico.ico": "static/images/icons/"

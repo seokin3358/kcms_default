@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kone.kitms.mapper.KitmsMenuMapper">
+
+    <!-- 메뉴 결과 매핑 -->
+    <resultMap id="KitmsMenuResult" type="com.kone.kitms.domain.KitmsMenu">
+        <id property="menuId" column="menu_id"/>
+        <result property="menuName" column="menu_name"/>
+        <result property="menuUrl" column="menu_url"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="menuLevel" column="menu_level"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="isActive" column="is_active"/>
+        <result property="isNewWindow" column="is_new_window"/>
+        <result property="menuDescription" column="menu_description"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="updatedBy" column="updated_by"/>
+    </resultMap>
+
+    <!-- 모든 활성 메뉴 조회 -->
+    <select id="findAllActiveMenus" resultMap="KitmsMenuResult">
+        SELECT 
+            menu_id,
+            menu_name,
+            menu_url,
+            parent_id,
+            menu_level,
+            sort_order,
+            is_active,
+            is_new_window,
+            menu_description,
+            created_at,
+            updated_at,
+            created_by,
+            updated_by
+        FROM kitms_menu
+        WHERE is_active = 'Y'
+        ORDER BY menu_level, sort_order, menu_id
+    </select>
+
+    <!-- 모든 메뉴 조회 (관리자용) -->
+    <select id="findAllMenus" resultMap="KitmsMenuResult">
+        SELECT 
+            menu_id,
+            menu_name,
+            menu_url,
+            parent_id,
+            menu_level,
+            sort_order,
+            is_active,
+            is_new_window,
+            menu_description,
+            created_at,
+            updated_at,
+            created_by,
+            updated_by
+        FROM kitms_menu
+        ORDER BY menu_level, sort_order, menu_id
+    </select>
+
+    <!-- 메뉴 레벨로 조회 -->
+    <select id="findByMenuLevel" resultMap="KitmsMenuResult">
+        SELECT 
+            menu_id,
+            menu_name,
+            menu_url,
+            parent_id,
+            menu_level,
+            sort_order,
+            is_active,
+            is_new_window,
+            menu_description,
+            created_at,
+            updated_at,
+            created_by,
+            updated_by
+        FROM kitms_menu
+        WHERE menu_level = #{menuLevel}
+          AND is_active = 'Y'
+        ORDER BY sort_order, menu_id
+    </select>
+
+    <!-- 부모 ID로 자식 메뉴 조회 -->
+    <select id="findByParentId" resultMap="KitmsMenuResult">
+        SELECT 
+            menu_id,
+            menu_name,
+            menu_url,
+            parent_id,
+            menu_level,
+            sort_order,
+            is_active,
+            is_new_window,
+            menu_description,
+            created_at,
+            updated_at,
+            created_by,
+            updated_by
+        FROM kitms_menu
+        WHERE parent_id = #{parentId}
+          AND is_active = 'Y'
+        ORDER BY sort_order, menu_id
+    </select>
+
+    <!-- 메뉴 ID로 조회 -->
+    <select id="findById" resultMap="KitmsMenuResult">
+        SELECT 
+            menu_id,
+            menu_name,
+            menu_url,
+            parent_id,
+            menu_level,
+            sort_order,
+            is_active,
+            is_new_window,
+            menu_description,
+            created_at,
+            updated_at,
+            created_by,
+            updated_by
+        FROM kitms_menu
+        WHERE menu_id = #{menuId}
+    </select>
+
+    <!-- 전체 메뉴 트리 구조 조회 (WITH RECURSIVE 사용) -->
+    <select id="findMenuTreeWithRecursive" resultMap="KitmsMenuResult">
+        WITH RECURSIVE menu_tree AS (
+            -- 루트 메뉴 (1depth)
+            SELECT 
+                menu_id, 
+                menu_name, 
+                menu_url, 
+                parent_id, 
+                menu_level, 
+                sort_order,
+                is_active,
+                is_new_window,
+                menu_description,
+                created_at,
+                updated_at,
+                created_by,
+                updated_by
+            FROM kitms_menu 
+            WHERE parent_id IS NULL 
+              AND is_active = 'Y'
+            
+            UNION ALL
+            
+            -- 자식 메뉴 (2depth)
+            SELECT 
+                m.menu_id, 
+                m.menu_name, 
+                m.menu_url, 
+                m.parent_id, 
+                m.menu_level, 
+                m.sort_order,
+                m.is_active,
+                m.is_new_window,
+                m.menu_description,
+                m.created_at,
+                m.updated_at,
+                m.created_by,
+                m.updated_by
+            FROM kitms_menu m
+            INNER JOIN menu_tree mt ON m.parent_id = mt.menu_id
+            WHERE m.is_active = 'Y'
+        )
+        SELECT 
+            menu_id,
+            menu_name,
+            menu_url,
+            parent_id,
+            menu_level,
+            sort_order,
+            is_active,
+            is_new_window,
+            menu_description,
+            created_at,
+            updated_at,
+            created_by,
+            updated_by
+        FROM menu_tree 
+        ORDER BY menu_level, sort_order, menu_id
+    </select>
+
+    <!-- 특정 메뉴와 모든 하위 메뉴 조회 -->
+    <select id="findMenuWithAllChildren" resultMap="KitmsMenuResult">
+        WITH RECURSIVE submenu_tree AS (
+            -- 특정 메뉴
+            SELECT 
+                menu_id, 
+                menu_name, 
+                menu_url, 
+                parent_id, 
+                menu_level, 
+                sort_order,
+                is_active,
+                is_new_window,
+                menu_description,
+                created_at,
+                updated_at,
+                created_by,
+                updated_by
+            FROM kitms_menu 
+            WHERE menu_id = #{menuId}
+            
+            UNION ALL
+            
+            -- 모든 하위 메뉴
+            SELECT 
+                m.menu_id, 
+                m.menu_name, 
+                m.menu_url, 
+                m.parent_id, 
+                m.menu_level, 
+                m.sort_order,
+                m.is_active,
+                m.is_new_window,
+                m.menu_description,
+                m.created_at,
+                m.updated_at,
+                m.created_by,
+                m.updated_by
+            FROM kitms_menu m
+            INNER JOIN submenu_tree st ON m.parent_id = st.menu_id
+            WHERE m.is_active = 'Y'
+        )
+        SELECT 
+            menu_id,
+            menu_name,
+            menu_url,
+            parent_id,
+            menu_level,
+            sort_order,
+            is_active,
+            is_new_window,
+            menu_description,
+            created_at,
+            updated_at,
+            created_by,
+            updated_by
+        FROM submenu_tree 
+        ORDER BY menu_level, sort_order, menu_id
+    </select>
+
+    <!-- 메뉴 생성 -->
+    <insert id="insert" parameterType="com.kone.kitms.domain.KitmsMenu" useGeneratedKeys="true" keyProperty="menuId">
+        INSERT INTO kitms_menu (
+            menu_name,
+            menu_url,
+            parent_id,
+            menu_level,
+            sort_order,
+            is_active,
+            is_new_window,
+            menu_description,
+            created_at,
+            updated_at,
+            created_by,
+            updated_by
+        ) VALUES (
+            #{menuName},
+            #{menuUrl},
+            #{parentId},
+            #{menuLevel},
+            #{sortOrder},
+            #{isActive},
+            #{isNewWindow},
+            #{menuDescription},
+            NOW(),
+            NOW(),
+            #{createdBy},
+            #{updatedBy}
+        )
+    </insert>
+
+    <!-- 메뉴 수정 -->
+    <update id="update" parameterType="com.kone.kitms.domain.KitmsMenu">
+        UPDATE kitms_menu SET
+            menu_name = #{menuName},
+            menu_url = #{menuUrl},
+            parent_id = #{parentId},
+            menu_level = #{menuLevel},
+            sort_order = #{sortOrder},
+            is_active = #{isActive},
+            is_new_window = #{isNewWindow},
+            menu_description = #{menuDescription},
+            updated_at = NOW(),
+            updated_by = #{updatedBy}
+        WHERE menu_id = #{menuId}
+    </update>
+
+    <!-- 메뉴 삭제 (논리 삭제) -->
+    <update id="deleteById">
+        UPDATE kitms_menu SET
+            is_active = 'N',
+            updated_at = NOW()
+        WHERE menu_id = #{menuId}
+    </update>
+
+    <!-- 메뉴 상태 변경 -->
+    <update id="updateStatus">
+        UPDATE kitms_menu SET
+            is_active = #{isActive},
+            updated_at = NOW()
+        WHERE menu_id = #{menuId}
+    </update>
+
+    <!-- 메뉴 정렬 순서 변경 -->
+    <update id="updateSortOrder">
+        UPDATE kitms_menu SET
+            sort_order = #{sortOrder},
+            updated_at = NOW()
+        WHERE menu_id = #{menuId}
+    </update>
+
+</mapper>

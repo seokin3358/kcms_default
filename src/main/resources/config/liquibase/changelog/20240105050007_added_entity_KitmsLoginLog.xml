@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity KitmsLoginLog.
+    -->
+    <changeSet id="20240105050007-1" author="jhipster">
+        <createTable tableName="kitms_login_log">
+            <column name="log_no" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="varchar(30)">
+                <constraints nullable="false" />
+            </column>
+            <column name="login_success" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="login_dt" type="${datetimeType}">
+                <constraints nullable="false" />
+            </column>
+            <column name="login_ip" type="varchar(20)">
+                <constraints nullable="true" />
+            </column>
+            <column name="login_reason" type="varchar(50)">
+                <constraints nullable="true" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+        <dropDefaultValue tableName="kitms_login_log" columnName="login_dt" columnDataType="${datetimeType}"/>
+    </changeSet>
+</databaseChangeLog>

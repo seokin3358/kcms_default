@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>케이원 - KITMS 메인 페이지</title>
+<!-- 
+    KITMS(Key IT Management System) 메인 페이지
+    케이원 회사의 공식 웹사이트 메인 페이지입니다.
+    
+    주요 기능:
+    - 동적 메뉴 로드 및 표시
+    - 공지사항 섹션 (상단 고정 공지사항)
+    - 반응형 웹 디자인
+    - 보안 이미지 URL 처리
+    
+    @author KITMS Development Team
+    @version 1.0
+-->
+<!-- <link rel="stylesheet" href="./style/style.css"> -->
+
+<link rel="stylesheet" href="./style/splide.min.css">
+<link rel="stylesheet" href="./style/reset.css">
+<link rel="stylesheet" href="./style/common.css">
+<link rel="stylesheet" href="./style/main.css">
+<link rel="stylesheet" href="./style/swiper-bundle.min.css" />
+<link rel="stylesheet" href="./style/aos.css">
+<link rel="stylesheet" href="./style/mobile.css">
+<!-- 보안 CSS 파일들 (동적으로 로드) -->
+<link rel="stylesheet" id="secure-main-css" href="">
+<link rel="stylesheet" id="secure-common-css" href="">
+<link rel="stylesheet" id="secure-mobile-css" href="">
+<link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" type="image/x-icon">
+<style>
+    /* 공지사항 관련 스타일 */
+    .loading, .error, .no-notice {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+        font-size: 16px;
+    }
+    
+    .error {
+        color: #e74c3c;
+    }
+    
+    .no-notice {
+        color: #95a5a6;
+    }
+
+    /* 헤더 로딩 관련 스타일 */
+    .header-loading {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+        font-size: 14px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    /* 헤더 메뉴 호버 효과 수정 */
+    .header .header-gnb .gnb-depth-1 .depth-1:hover .depth-item {
+        visibility: visible !important;
+        opacity: 1 !important;
+        transition: all 0.3s ease;
+    }
+    
+    .header .header-gnb .gnb-depth-1 .depth-1:hover .depth-item .gnb-depth-2 {
+        visibility: visible !important;
+        opacity: 1 !important;
+        transition: all 0.3s ease;
+    }
+
+    /* 헤더 open 클래스 스타일 */
+    .header.open {
+        /* 배경색 변경 제거 - 원래 배경 유지 */
+        /* background-color: rgba(0, 0, 0, 0.95); 
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);*/
+        transition: all 0.3s ease;
+    }
+
+    .header.open .header-gnb .gnb-depth-1 .depth-1.current .depth-item {
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .header.open .header-gnb .gnb-depth-1 .depth-1.current .depth-item .gnb-depth-2 {
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* 이미지 보안 스타일 */
+    img {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
+        user-drag: none;
+    }
+
+.area1 .center_frame {z-index: 2;position: relative;}
+.splide-main1 {width: 100%; height: 960px; margin: 0 auto 0; position: absolute; top:-160px;}
+.splide-main1 .splide__slide {left: 30px; width: 100%; height: 960px; text-align: center; transition: transform 0.3s ease;}
+.splide-main1 .splide__slide img { height: 100%;}
+
+.area3 .wrap .since {top: 70%;}
+
+/* 원형 게이지 스타일 */
+.progress-circle { position: absolute; bottom: 148px; left: 50%; margin-left:-800px; width: 88px; height: 88px;}
+.progress-circle svg { transform: rotate(-90deg); width: 100%; height: 100%;}
+.progress-circle .bg { fill: none; stroke: #5c5b76; stroke-width: 1;}
+.progress-circle .progress { fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: butt; stroke-dasharray: 100, 100; stroke-dashoffset: 100; transition: stroke-dashoffset 0.1s linear;}
+
+/* 버튼: 원형 게이지 */
+.toggle-btn { position: absolute; top: 50%;  left: 50%;  transform: translate(-50%, -50%); border: none; background: none; color: #fff; font-size: 17px; cursor: pointer; width: 80px; height: 80px;}
+
+/* arrow */
+.splide__arrows { position: absolute; bottom:190px; left: 50%; width:160px; margin-left: -720px;}
+.splide__arrow { width: 40px; height: 40px; background: none; border: none; cursor: pointer; color: #fff; font-size: 32px; }
+.splide__arrow svg {fill:#fff;}
+
+/* 정확한 비율 기반 반응형 스타일 */
+@media (max-width: 1400px) {
+    .area1 .center_frame { padding: 0 60px; }
+    .splide-main1 { height: 85vh; min-height: 800px; }
+    .splide-main1 .splide__slide { height: 85vh; min-height: 800px; }
+    .progress-circle { margin-left: -700px; }
+    .splide__arrows { margin-left: -620px; }
+}
+
+@media (max-width: 1200px) {
+    .area1 .center_frame { padding: 0 40px; }
+    .splide-main1 { height: 80vh; min-height: 700px; }
+    .splide-main1 .splide__slide { height: 80vh; min-height: 700px; }
+    .progress-circle { margin-left: -600px; }
+    .splide__arrows { margin-left: -520px; }
+}
+
+
+@media (max-width: 768px) {
+    .area1 .center_frame { padding: 0 20px; }
+    .splide-main1 { 
+        height: auto;
+    }
+    .splide-main1 .splide__slide { 
+        width: 100%; 
+        height: 725px;
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        overflow: hidden; 
+        border-radius: 0;
+        left: 0;
+    }
+    .splide-main1 .splide__slide img {
+        width: 100%; 
+        height: 100%; 
+        object-fit: cover;
+    }
+    .progress-circle {
+        margin-left: 0; 
+        left: 20px; 
+        bottom: 15vh; 
+        width: 60px; 
+        height: 60px;
+    }
+    .toggle-btn {
+        width: 60px; 
+        height: 60px; 
+        font-size: 14px;
+    }
+    .splide__arrows {
+        margin-left: 0; 
+        left: 50px; 
+        bottom: calc(15vh + 30px);
+    }
+    .splide__arrow {
+        font-size: 24px;
+        width: 30px;
+        height: 30px;
+    }
+    .splide__arrow svg {
+        width: 12px; 
+        height: 12px;
+    }
+}
+
+.splide-main2 { padding-top: 354px;}
+.splide-main2 .splide__slide {width:520px; height:572px;}
+.splide-main2 .splide__slide:nth-child(1) { background: transparent; background-size: cover; }
+.splide-main2 .splide__slide:nth-child(2) { background: transparent; background-size: cover; }
+.splide-main2 .splide__slide:nth-child(3) { background: transparent; background-size: cover; }
+.splide-main2 .splide__slide:nth-child(4) { background: transparent; background-size: cover; }
+/* splide-main2 정확한 비율 기반 반응형 */
+@media (max-width: 1400px) {
+    .splide-main2 { padding-top: 30vh; }
+    .splide-main2 .splide__slide { 
+        width: 480px; 
+        height: 520px; 
+    }
+}
+
+@media (max-width: 1200px) {
+    .splide-main2 { padding-top: 25vh; }
+    .splide-main2 .splide__slide { 
+        width: 420px; 
+        height: 460px; 
+    }
+}
+
+@media (max-width: 992px) {
+    .splide-main2 { padding-top: 20vh; }
+    .splide-main2 .splide__slide { 
+        width: 380px; 
+        height: 420px; 
+    }
+}
+
+@media (max-width: 768px) {
+    .splide-main2 { padding-top: 15vh; }
+    .splide-main2 .splide__slide { 
+        width: 85%; 
+        max-width: 350px; 
+        height: 320px; 
+        border-radius: 16px;
+        margin: 0 auto;
+    }
+}
+
+
+/* 정확한 비율 기반 전체 반응형 */
+@media (max-width: 1400px) {
+    .center_frame { padding: 0 60px; }
+    .area_tit h2 { font-size: 2.8rem; }
+    .area_tit .subtxt { font-size: 1.2rem; }
+}
+
+@media (max-width: 1200px) {
+    .center_frame { padding: 0 50px; }
+    .area_tit h2 { font-size: 2.5rem; }
+    .area_tit .subtxt { font-size: 1.1rem; }
+}
+
+@media (max-width: 992px) {
+    .center_frame { padding: 0 40px; }
+    .area_tit h2 { font-size: 2.2rem; }
+    .area_tit .subtxt { font-size: 1rem; }
+    .area2 .container { flex-direction: column; }
+    .area2 .col { width: 100%; margin-bottom: 30px; }
+}
+
+@media (max-width: 768px) {
+    .center_frame { padding: 0 30px; }
+    .area_tit h2 { font-size: 1.9rem; }
+    .area_tit .subtxt { font-size: 0.95rem; }
+    
+    /* Area1 모바일 */
+    .area1__slogan h1 { font-size: 2.2rem; }
+    .area1__slogan .subtxt { font-size: 1rem; }
+    
+    /* Area2 반응형 */
+    .area2 .container { 
+        flex-direction: column; 
+        gap: 25px;
+    }
+    .area2 .col { 
+        width: 100%; 
+        margin-bottom: 0;
+    }
+    .area2 .box { 
+        padding: 25px; 
+        min-height: auto;
+    }
+    
+    /* Area3 반응형 */
+    .area3 .wrap { 
+        flex-direction: column; 
+        text-align: center;
+    }
+    .area3 .since { 
+        margin-bottom: 25px; 
+    }
+    .area3 .area_tit { 
+        margin-bottom: 35px; 
+    }
+    .area3 .items_box img { 
+        max-width: 100%; 
+        height: auto; 
+    }
+    
+    /* Area4 반응형 */
+    .area4 .area_tit { 
+        text-align: center; 
+        margin-bottom: 35px; 
+    }
+    
+}
+
+
+/* 정확한 비율 기반 헤더 반응형 */
+@media (max-width: 1200px) {
+    .header-inner { 
+        padding: 0 40px; 
+    }
+    .header-logo img { 
+        max-height: 50px; 
+    }
+}
+
+@media (max-width: 768px) {
+    .header-inner { 
+        padding: 0; 
+    }
+    .header-logo img { 
+        max-height: 45px; 
+    }
+}
+
+</style>
+</head>
+<body>
+    <!-- 헤더 영역 - 동적으로 로드됩니다 -->
+    <div id="header" class="header">
+        <div class="header-loading">
+            <p>헤더를 불러오는 중입니다...</p>
+        </div>
+    </div>
+    <div class="body main">
+
+
+        <div class="area1">
+            <div class="center_frame centerbox">                
+                <div class="area1__slogan">
+                    <h1 class="">Innovation&nbsp;Spark,</h1>
+                    <h1 class="next">K-ONE</h1>
+                    <p class="subtxt">케이원, 혁신의 시작이 되다</p>      
+                </div>
+            </div>
+            <section class="splide splide-main1" id="splide-main1">
+                <div class="splide__track">
+                    <ul class="splide__list">
+                        <li class="splide__slide">
+                            <img class="slide-image" data-slide="1" alt="Slide 1">
+                        </li>
+                        <li class="splide__slide">
+                            <img class="slide-image" data-slide="2" alt="Slide 2">
+                        </li>
+                        <li class="splide__slide">
+                            <img class="slide-image" data-slide="3" alt="Slide 3">
+                        </li>
+                    </ul>
+                </div>                
+                <div class="progress-circle"><!-- 원형 게이지 -->
+                    <svg viewBox="0 0 36 36">
+                    <path
+                        class="bg"
+                        d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                        class="progress"
+                        stroke-dasharray="100, 100"
+                        d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    </svg>
+                    <button class="toggle-btn">❚❚</button>
+                </div>
+            </section>
+        </div>
+        <div class="area2 area">
+            <div class="center_frame">                
+                <div class="area_tit">
+                    <h2>Trust Benchmark</h2>
+                    <p class="subtxt">케이원, 축적된 경험과 검증된 솔루션을 제공하다</p>
+                </div>
+                <div class="container">
+                    <div class="col col1">
+                        <div class="box box1">
+                            <p class="num">01</p>
+                            <p class="box_tit">통합유지보수/상품 공급</p>
+                            <p class="box_subtit">모바일 기반</p>
+                            <p class="content">
+                                <strong>전국 2시간 이내 서비스 가능 인프라</strong><br>
+                                • 콜센터, 전국 지사 및 서비스센터 1차 대응<br>
+                                • 모바일 플렛폼 기반 실시간 처리 기반<br>
+                                • 운영 빅데이터 활용 서비스 개선<br>
+                                • 서버, PC, 프린터 렌탈, 위탁, 구축 등<br>
+                                고객 맞춤형 서비스 제공
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col col2">
+                        <div class="box box2">
+                            <p class="num">02</p>
+                            <p class="box_tit">정보통신 공사</p>
+                            <p class="box_subtit">실적 286억</p>
+                            <p class="content">
+                                <strong>정보통신공사 도급 순위 : 126위 / 11,588</strong><br>
+                                • 공공기관, 민간기업, 금융권, 군 등 공사 진행<br>
+                                • 전문 인력 구성, 체계적인 공사 계획 수립<br>
+                                • 다양한 수주 경험 → 고객 만족도 상승<br>
+                                • 공사 이후 지속적인 관리
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col col3">
+                        <div class="box box3">
+                            <p class="num">03</p>
+                            <p class="box_tit">스마트 사업</p>
+                            <p class="box_subtit">최적화솔루션 / 센터</p>
+                            <p class="content">
+                                <strong>스마트 팜 최적화 솔루션</strong><br>
+                                • 행안부 스마트 워크 센터 운영<br>
+                                • 농정원 스마트 팜 혁신 밸리 구축<br>
+                                • 안동 Hemp 사업 협력 MOU<br>
+                                • 베트남 호치민 스마트 오피스 운영
+                            </p>
+                        </div>
+                        <div class="box box4">
+                            <p class="num">04</p>
+                            <p class="box_tit">페이퍼리스</p>
+                            <p class="box_subtit">전자문서</p>
+                            <p class="content">
+                                • KT 전자문서 (Document DX) 총판<br>
+                                • NH생명, NH 손보, NH 증권 모바일 안내장 시스템 구축<br>
+                                • 모바일 전자등기 시스템 구축<br>
+                                • 전자계약 , 전자유통, 전자보관솔루션
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="area3 area">
+            <div class="wrap center_frame">    
+                <div class="since">
+                    <p>Since 1996</p>
+                </div>            
+                <div class="area_tit reverse">                
+                    <h2>Beyond the Peak,<br>K-ONE</h2>
+                    <p class="subtxt">더 높은 내일로 나아가다</p>
+                    <a href="" class="more">
+                        <span>Read More</span>
+                        <i class="mso">chevron_right</i>
+                    </a>
+                </div>
+                <div class="items_box">
+                    <img class="area3-image" alt="">
+                    <!--
+                    <div class="items">
+                        <div class="items_l">                            
+                            <div class="item item1">
+                                <p class="item_tit">업력</p>
+                                <p class="item_stat">
+                                    <span class="cnt">30</span>
+                                    <span class="unit">년</span>
+                                </p>
+                            </div>
+                            <div class="item item2">
+                                <p class="item_tit">계약</p>
+                                <p class="item_stat">
+                                    <span class="cnt">1,935</span>
+                                    <span class="unit">건</span>
+                                </p>
+                            </div>
+                            <div class="item item3">
+                                <p class="item_tit">임직원 수</p>
+                                <p class="item_stat">
+                                    <span class="cnt">1,154</span>
+                                    <span class="unit">명</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="items_r">                            
+                            <div class="item item4">
+                                <p class="item_tit">신용등급</p>
+                                <p class="item_stat">
+                                    <span class="cnt">AAA-</span>
+                                </p>
+                            </div>
+                            <div class="item item5">
+                                <p class="item_tit">연매출</p>
+                                <p class="item_stat">
+                                    <span class="cnt">1,312</span>
+                                    <span class="unit">억</span>
+                                </p>
+                            </div>
+                            <div class="item item6">
+                                <p class="item_tit">기술인력 비율</p>
+                                <p class="item_stat">
+                                    <span class="cnt">92</span>
+                                    <span class="unit">%</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>  
+                    
+                    
+                     <div class="items">
+                        <div class="item item1">
+                            <p class="item_tit">업력</p>
+                            <p class="item_stat">
+                                <span class="cnt">30</span>
+                                <span class="unit">년</span>
+                            </p>
+                        </div>
+                        <div class="item item2">
+                            <p class="item_tit">계약</p>
+                            <p class="item_stat">
+                                <span class="cnt">1,935</span>
+                                <span class="unit">건</span>
+                            </p>
+                        </div>
+                        <div class="item item3">
+                            <p class="item_tit">임직원 수</p>
+                            <p class="item_stat">
+                                <span class="cnt">1,154</span>
+                                <span class="unit">명</span>
+                            </p>
+                        </div>
+                        <div class="item item4">
+                            <p class="item_tit">신용등급</p>
+                            <p class="item_stat">
+                                <span class="cnt">AAA-</span>
+                            </p>
+                        </div>
+                        <div class="item item5">
+                            <p class="item_tit">연매출</p>
+                            <p class="item_stat">
+                                <span class="cnt">1,312</span>
+                                <span class="unit">억</span>
+                            </p>
+                        </div>
+                        <div class="item item6">
+                            <p class="item_tit">기술인력 비율</p>
+                            <p class="item_stat">
+                                <span class="cnt">92</span>
+                                <span class="unit">%</span>
+                            </p>
+                        </div>
+                    </div>--><!-- -->
+                </div>
+            </div>
+        </div>
+        <div class="area4 area">
+            <div class="center_frame">
+                <div class="area_tit">                
+                    <h2>On the Right Track</h2>
+                    <p class="subtxt">바른 길을 향한 비즈니스를 인정받다</p>
+                </div>                
+            </div>            
+            <section class="splide splide-main2" id="splide-main2">
+                <div class="splide__track">
+                    <ul class="splide__list">
+                        <li class="splide__slide">
+                            <div class="txt_box">
+                                <p class="year">2025</p>
+                                <p class="title">한국서비스품질 우수기업</p>
+                            </div>
+                            <div class="mask_box">
+                                <a class="arrow" href=""></a>
+                                <img class="award-image" data-award="1" alt="">
+                            </div>
+                        </li>
+                        <li class="splide__slide">
+                            <div class="txt_box">
+                                <p class="year">2025</p>
+                                <p class="title">서비스품질보증 ISO 9001</p>
+                            </div>
+                            <div class="mask_box">
+                                <a class="arrow" href=""></a>
+                                <img class="award-image" data-award="2" alt="">
+                            </div>
+                        </li>
+                        <li class="splide__slide">
+                            <div class="txt_box">
+                                <p class="year">2025</p>
+                                <p class="title">기술혁신형 중소기업</p>
+                            </div>
+                            <div class="mask_box">
+                                <a class="arrow" href=""></a>
+                                <img class="award-image" data-award="3" alt="">
+                            </div>
+                        </li>
+                        <li class="splide__slide">
+                            <div class="txt_box">
+                                <p class="year">2025</p>
+                                <p class="title">안전보건인증 ISO 45001</p>
+                            </div>
+                            <div class="mask_box">
+                                <a class="arrow" href=""></a>
+                                <img class="award-image" data-award="4" alt="">
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+        
+        <!-- 공지사항 섹션 - API로 동적 로드 -->
+        <div id="noticeSection">
+            <div class="loading">공지사항 섹션을 불러오는 중...</div>
+        </div>
+        
+    </div>
+    <div id="footer">
+        <div class="centerbox">        
+            <a href="./main.html" class="footer__logo">
+                <img class="logo-image" alt="">
+            </a>
+            <div class="footer__menu">
+                <a href="">개인정보처리방침</a>&nbsp;&nbsp;&nbsp;<span class="dvider"></span>&nbsp;&nbsp;
+                <a href="">법적고지</a>
+            </div>
+            <p class="footer__address">
+                서울특별시 금천구 가산디지털2로 14, 1405호 (가산동, 대륭테크노타운 12차)
+            </p>        
+            <p class="footer__address">
+                <span>TEL : 02-853-5250</span>
+                <span>FAX : 02-853-5230</span>
+                <span>E-mail : K-ONE@K-ONE.CO.KR</span>
+            </p>
+            <p class="footer__copyright">
+                Copyright ⓒ K-ONE. All Rights Reserved.
+            </p>
+            <div class="footer__quick">
+                <h3>Family Site</h3>
+                <a href="">K-ONE</a>
+                <a href="">K-SYSTEM</a>
+                <a href="">K-NETWORKS</a>
+            </div>
+        </div>
+    </div>
+    <script src="./js/swiper-bundle.min.js"></script>
+    <script src="./js/splide.min.js"></script>
+    <script src="./js/aos.js"></script>
+    <script src="./js/gsap.min.js"></script><!-- GSAP Core -->
+    <script src="./js/ScrollTrigger.min.js"></script><!-- ScrollTrigger Plugin -->
+    <script src="./js/common.js"></script>
+
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=appkey&autoload=false"></script>
+    
+    <!-- 메뉴 로드 스크립트 -->
+    <script>
+        // API 기본 URL
+        window.API_BASE_URL = '/api';
+        const API_BASE_URL = window.API_BASE_URL;
+        
+        // 메뉴 로드 함수
+        async function loadMenus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitms-menus/tree`);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.status === 'OK' && result.data.menuTreeJson) {
+                        renderMenus(result.data.menuTreeJson);
+                    }
+                } else {
+                    console.error('메뉴 API 응답 오류:', response.status);
+                }
+            } catch (error) {
+                console.error('메뉴 로드 오류:', error);
+                // 오류 시 기본 메뉴 표시
+                renderDefaultMenus();
+            }
+        }
+        
+        // 기본 메뉴 렌더링 (API 실패 시)
+        function renderDefaultMenus() {
+            const defaultMenus = [
+                {
+                    menuName: '케이원소개',
+                    menuUrl: './sub0101.html',
+                    children: [
+                        { menuName: '회사소개', menuUrl: './sub0101.html' },
+                        { menuName: '케이원연혁', menuUrl: './sub0102.html' },
+                        { menuName: 'CEO 인사말', menuUrl: './sub0103.html' },
+                        { menuName: '윤리경영', menuUrl: './sub0104.html' },
+                        { menuName: '조직구성', menuUrl: './sub0105.html' },
+                        { menuName: '인증현황', menuUrl: './sub0106.html' },
+                        { menuName: '오시는 길', menuUrl: './sub0107.html' }
+                    ]
+                },
+                {
+                    menuName: '사업영역',
+                    menuUrl: './sub0201.html',
+                    children: [
+                        { menuName: '사업하기', menuUrl: './sub0201.html' },
+                        { menuName: '문의하기', menuUrl: './sub0202.html' }
+                    ]
+                },
+                {
+                    menuName: '홍보센터',
+                    menuUrl: './sub0301.html',
+                    children: [
+                        { menuName: '보도자료', menuUrl: './sub0301.html' },
+                        { menuName: '공지사항', menuUrl: './sub0302.html' }
+                    ]
+                },
+                {
+                    menuName: '채용공고',
+                    menuUrl: './sub0401.html',
+                    children: [
+                        { menuName: '채용공고', menuUrl: './sub0401.html' },
+                        { menuName: '인재상', menuUrl: './sub0402.html' }
+                    ]
+                }
+            ];
+            renderMenus(defaultMenus);
+        }
+        
+        // 메뉴 렌더링 함수
+        function renderMenus(menuTree) {
+            // 데스크톱 메뉴 렌더링
+            renderDesktopMenus(menuTree);
+            
+            // 모바일 메뉴 렌더링
+            renderMobileMenus(menuTree);
+        }
+        
+        // 데스크톱 메뉴 렌더링
+        function renderDesktopMenus(menuTree) {
+            const gnbDepth1 = document.querySelector('.header-gnb .gnb-depth-1');
+            if (!gnbDepth1) {
+                console.error('데스크톱 메뉴 컨테이너를 찾을 수 없습니다.');
+                return;
+            }
+            
+            // 기존 메뉴 제거
+            gnbDepth1.innerHTML = '';
+            
+            menuTree.forEach(menu => {
+                // is_active가 'N'이면 건너뛰기
+                if (menu.isActive === 'N') {
+                    return;
+                }
+                
+                const li = document.createElement('li');
+                li.className = 'depth-1';
+                
+                // 1depth 링크
+                const link = document.createElement('a');
+                link.href = menu.menuUrl || '#';
+                link.className = 'depth-1-link hover-underline';
+                if (menu.isNewWindow === 'Y') {
+                    link.target = '_blank';
+                }
+                
+                const span = document.createElement('span');
+                span.textContent = menu.menuName;
+                link.appendChild(span);
+                
+                // 2depth 메뉴가 있는 경우
+                if (menu.children && menu.children.length > 0) {
+                    const depthItem = document.createElement('div');
+                    depthItem.className = 'depth-item';
+                    
+                    const ul = document.createElement('ul');
+                    ul.className = 'gnb-depth-2';
+                    
+                    menu.children.forEach(child => {
+                        // 자식 메뉴도 is_active가 'N'이면 건너뛰기
+                        if (child.isActive === 'N') {
+                            return;
+                        }
+                        
+                        const childLi = document.createElement('li');
+                        childLi.className = 'depth-2';
+                        
+                        const childLink = document.createElement('a');
+                        childLink.href = child.menuUrl || '#';
+                        childLink.className = 'depth-2-link';
+                        if (child.isNewWindow === 'Y') {
+                            childLink.target = '_blank';
+                        }
+                        
+                        const childSpan = document.createElement('span');
+                        childSpan.textContent = child.menuName;
+                        childLink.appendChild(childSpan);
+                        
+                        childLi.appendChild(childLink);
+                        ul.appendChild(childLi);
+                    });
+                    
+                    // 자식 메뉴가 있는 경우에만 depth-item 추가
+                    if (ul.children.length > 0) {
+                        depthItem.appendChild(ul);
+                        li.appendChild(link);
+                        li.appendChild(depthItem);
+                    } else {
+                        li.appendChild(link);
+                    }
+                } else {
+                    li.appendChild(link);
+                }
+                
+                gnbDepth1.appendChild(li);
+            });
+        }
+        
+        // 모바일 메뉴 렌더링
+        function renderMobileMenus(menuTree) {
+            const mobileGnbDepth1 = document.querySelector('.sidebar .gnb-depth-1');
+            if (!mobileGnbDepth1) {
+                console.error('모바일 메뉴 컨테이너를 찾을 수 없습니다.');
+                return;
+            }
+            
+            // 기존 메뉴 제거
+            mobileGnbDepth1.innerHTML = '';
+            
+            menuTree.forEach(menu => {
+                // is_active가 'N'이면 건너뛰기
+                if (menu.isActive === 'N') {
+                    return;
+                }
+                
+                const li = document.createElement('li');
+                li.className = 'depth-1';
+                
+                // 1depth 링크
+                const link = document.createElement('a');
+                link.href = menu.menuUrl || '#';
+                link.className = 'depth-1-link';
+                if (menu.isNewWindow === 'Y') {
+                    link.target = '_blank';
+                }
+                
+                const span = document.createElement('span');
+                span.textContent = menu.menuName;
+                link.appendChild(span);
+                
+                // 2depth 메뉴가 있는 경우
+                if (menu.children && menu.children.length > 0) {
+                    const ul = document.createElement('ul');
+                    ul.className = 'gnb-depth-2';
+                    
+                    menu.children.forEach(child => {
+                        // 자식 메뉴도 is_active가 'N'이면 건너뛰기
+                        if (child.isActive === 'N') {
+                            return;
+                        }
+                        
+                        const childLi = document.createElement('li');
+                        childLi.className = 'depth-2';
+                        
+                        const childLink = document.createElement('a');
+                        childLink.href = child.menuUrl || '#';
+                        childLink.className = 'depth-2-link';
+                        if (child.isNewWindow === 'Y') {
+                            childLink.target = '_blank';
+                        }
+                        
+                        const childSpan = document.createElement('span');
+                        childSpan.textContent = child.menuName;
+                        childLink.appendChild(childSpan);
+                        
+                        childLi.appendChild(childLink);
+                        ul.appendChild(childLi);
+                    });
+                    
+                    // 자식 메뉴가 있는 경우에만 추가
+                    if (ul.children.length > 0) {
+                        li.appendChild(link);
+                        li.appendChild(ul);
+                    } else {
+                        li.appendChild(link);
+                    }
+                } else {
+                    li.appendChild(link);
+                }
+                
+                mobileGnbDepth1.appendChild(li);
+            });
+            
+        }
+        
+        // 공지사항 섹션 로드 함수
+        async function loadNoticeSection() {
+            try {
+                // HTML 로드
+                const htmlResponse = await fetch(`${API_BASE_URL}/notice-section/html`);
+                if (!htmlResponse.ok) {
+                    throw new Error('공지사항 섹션 HTML을 불러올 수 없습니다.');
+                }
+                const htmlContent = await htmlResponse.text();
+                
+                // HTML에서 script 태그를 제거하고 HTML만 삽입
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlContent, 'text/html');
+                const scripts = doc.querySelectorAll('script');
+                scripts.forEach(script => script.remove());
+                const htmlWithoutScripts = doc.body.innerHTML;
+                
+                document.getElementById('noticeSection').innerHTML = htmlWithoutScripts;
+                
+                // JavaScript 파일 로드
+                await loadNoticeSectionScript();
+                
+            } catch (error) {
+                console.error('공지사항 섹션 로드 오류:', error);
+                document.getElementById('noticeSection').innerHTML = 
+                    '<div class="error">공지사항 섹션을 불러오는 중 오류가 발생했습니다.</div>';
+            }
+        }
+        
+        // 공지사항 섹션 JavaScript 로드 함수
+        async function loadNoticeSectionScript() {
+            try {
+                const scriptResponse = await fetch(`${API_BASE_URL}/notice-section/script`);
+                if (!scriptResponse.ok) {
+                    throw new Error('공지사항 섹션 JavaScript를 불러올 수 없습니다.');
+                }
+                const scriptContent = await scriptResponse.text();
+                
+                // JavaScript 실행
+                const script = document.createElement('script');
+                script.textContent = scriptContent;
+                document.head.appendChild(script);
+                document.head.removeChild(script);
+                
+                // 공지사항 데이터 로드
+                if (typeof loadNoticesForSection === 'function') {
+                    await loadNoticesForSection();
+                }
+                
+            } catch (error) {
+                console.error('공지사항 섹션 JavaScript 로드 오류:', error);
+            }
+        }
+        
+        // 보안 이미지 URL 매핑
+        let secureImageUrls = {};
+        
+        // 세션 토큰
+        let sessionToken = null;
+        
+        // 세션 토큰 발급
+        async function generateSessionToken() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/secure-images/session-token`, {
+                    method: 'POST',
+                    credentials: 'include' // 세션 쿠키 포함
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    sessionToken = data.sessionToken;
+                    return sessionToken;
+                } else {
+                    console.error('세션 토큰 발급 실패:', response.status);
+                    return null;
+                }
+            } catch (error) {
+                console.error('세션 토큰 발급 오류:', error);
+                return null;
+            }
+        }
+         
+        // 보안 이미지 URL 로드
+        async function loadSecureImageUrls() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/secure-images/mapping`);
+                if (response.ok) {
+                    secureImageUrls = await response.json();
+                }
+            } catch (error) {
+                console.error('보안 이미지 URL 로드 오류:', error);
+            }
+        }
+        
+        // 보안 이미지 URL 가져오기 (동적 생성 지원)
+        async function getSecureImageUrl(fileName) {
+            // 이미 매핑에 있으면 바로 반환
+            if (secureImageUrls[fileName]) {
+                return secureImageUrls[fileName];
+            }
+            
+            // 없으면 동적으로 토큰 생성
+            try {
+                const response = await fetch(`${API_BASE_URL}/secure-images/generate/${fileName}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    secureImageUrls[fileName] = data.secureUrl;
+                    return data.secureUrl;
+                }
+            } catch (error) {
+                console.warn(`이미지 토큰 생성 실패: ${fileName}`, error);
+            }
+            
+            // 실패 시 기본 경로 반환
+            return `/images/${fileName}`;
+        }
+        
+        // 보안 이미지 URL 재생성 (410 에러 시 사용)
+        async function regenerateSecureImageUrl(fileName) {
+            try {
+                // 기존 매핑에서 제거
+                delete secureImageUrls[fileName];
+                
+                // 새로운 토큰 생성
+                const response = await fetch(`${API_BASE_URL}/secure-images/generate/${fileName}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    secureImageUrls[fileName] = data.secureUrl;
+                    return data.secureUrl;
+                }
+            } catch (error) {
+                console.error(`이미지 토큰 재생성 오류 (${fileName}):`, error);
+            }
+            
+            return null;
+        }
+        
+        // 이미지 로딩 에러 처리 (410 에러 자동 재시도)
+        function handleImageLoadError(imgElement, fileName) {
+            // 410 에러인 경우 토큰 재생성 시도
+            if (imgElement.dataset.retryCount < 2) {
+                imgElement.dataset.retryCount = (parseInt(imgElement.dataset.retryCount) || 0) + 1;
+                
+                
+                // 토큰 재생성 후 재시도
+                regenerateSecureImageUrl(fileName).then(newUrl => {
+                    if (newUrl) {
+                        imgElement.src = newUrl;
+                    } else {
+                        // 재생성 실패 시 기본 경로로 폴백
+                        imgElement.src = `/images/${fileName}`;
+                    }
+                });
+            } else {
+                // 최대 재시도 횟수 초과 시 기본 경로로 폴백
+                console.warn(`이미지 로딩 최대 재시도 횟수 초과: ${fileName}`);
+                imgElement.src = `/images/${fileName}`;
+            }
+        }
+        
+        // 보안 CSS 파일 로드
+        async function loadSecureCssFiles() {
+            const cssFiles = ['main.css', 'common.css', 'mobile.css'];
+            
+            for (const cssFile of cssFiles) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/secure-images/css/${cssFile}`);
+                    if (response.ok) {
+                        const cssContent = await response.text();
+                        
+                        // 동적으로 스타일 태그 생성
+                        const styleTag = document.createElement('style');
+                        styleTag.id = `secure-${cssFile.replace('.css', '')}`;
+                        styleTag.textContent = cssContent;
+                        document.head.appendChild(styleTag);
+                        
+                    }
+                } catch (error) {
+                    console.warn(`보안 CSS 로드 실패: ${cssFile}`, error);
+                }
+            }
+        }
+        
+        // 모든 이미지 경로를 보안 URL로 업데이트
+        async function updateAllImagePaths() {
+            
+            // 슬라이드 이미지들 처리
+            const slideImages = document.querySelectorAll('.slide-image');
+            for (const img of slideImages) {
+                const slideNum = img.getAttribute('data-slide');
+                const imageFile = `slides/slide_main_1-${slideNum}.png`;
+                
+                const secureUrl = await getSecureImageUrl(imageFile);
+                img.src = secureUrl;
+                
+                img.addEventListener('error', function() {
+                    handleImageLoadError(this, imageFile);
+                });
+            }
+            
+            // 수상 이미지들 처리
+            const awardImages = document.querySelectorAll('.award-image');
+            for (const img of awardImages) {
+                const awardNum = img.getAttribute('data-award');
+                const imageFile = `awards/area4-award${awardNum}.png`;
+                
+                const secureUrl = await getSecureImageUrl(imageFile);
+                img.src = secureUrl;
+                
+                img.addEventListener('error', function() {
+                    handleImageLoadError(this, imageFile);
+                });
+            }
+            
+            // area3 이미지 처리
+            const area3Image = document.querySelector('.area3-image');
+            if (area3Image) {
+                const imageFile = 'area3-items-all.png';
+                
+                const secureUrl = await getSecureImageUrl(imageFile);
+                area3Image.src = secureUrl;
+                
+                area3Image.addEventListener('error', function() {
+                    handleImageLoadError(this, imageFile);
+                });
+            }
+            
+            // 로고 이미지 처리
+            const logoImage = document.querySelector('.logo-image');
+            if (logoImage) {
+                const imageFile = 'logos/kone_logo.svg';
+                
+                const secureUrl = await getSecureImageUrl(imageFile);
+                logoImage.src = secureUrl;
+                
+                logoImage.addEventListener('error', function() {
+                        handleImageLoadError(this, imageFile);
+                    });
+                }
+            
+            // 헤더 로고 이미지들 처리
+            const headerLogoWhite = document.querySelector('.header-logo-white');
+            if (headerLogoWhite) {
+                const imageFile = 'logos/kone_logo.svg';
+                const secureUrl = await getSecureImageUrl(imageFile);
+                headerLogoWhite.src = secureUrl;
+                headerLogoWhite.addEventListener('error', function() {
+                    handleImageLoadError(this, imageFile);
+                });
+            }
+            
+            const headerLogoColor = document.querySelector('.header-logo-color');
+            if (headerLogoColor) {
+                const imageFile = 'logos/kone_logo_color.svg';
+                const secureUrl = await getSecureImageUrl(imageFile);
+                headerLogoColor.src = secureUrl;
+                headerLogoColor.addEventListener('error', function() {
+                    handleImageLoadError(this, imageFile);
+                });
+            }
+            
+            // 푸터 로고 이미지 처리
+            const footerLogo = document.querySelector('.footer-logo');
+            if (footerLogo) {
+                const imageFile = 'logos/kone_logo.svg';
+                const secureUrl = await getSecureImageUrl(imageFile);
+                footerLogo.src = secureUrl;
+                footerLogo.addEventListener('error', function() {
+                    handleImageLoadError(this, imageFile);
+                });
+            }
+            
+            // CSS 배경 이미지들 (JavaScript로 동적 변경)
+            const slide2Elements = document.querySelectorAll('.splide-main2 .splide__slide');
+            for (let i = 0; i < slide2Elements.length; i++) {
+                const element = slide2Elements[i];
+                const imageFile = `slide-main2-${i + 1}.png`;
+                element.style.backgroundImage = `url(${await getSecureImageUrl(imageFile)})`;
+            }
+            
+            // area2 박스 배경 이미지들
+            const area2Boxes = document.querySelectorAll('.area2 .box');
+            for (let i = 0; i < area2Boxes.length; i++) {
+                const element = area2Boxes[i];
+                const imageFile = `area2-box-bg${i + 1}.png`;
+                element.style.backgroundImage = `url(${await getSecureImageUrl(imageFile)})`;
+                element.style.backgroundRepeat = 'no-repeat';
+                element.style.backgroundPosition = 'center center';
+            }
+            
+            // area3 배경 이미지
+            const area3Element = document.querySelector('.area3');
+            if (area3Element) {
+                const area3BgUrl = await getSecureImageUrl('area3-bg.png');
+                area3Element.style.backgroundImage = `url(${area3BgUrl}), linear-gradient(to right, #0c212f, #215567)`;
+                area3Element.style.backgroundPosition = 'center center, center center';
+                area3Element.style.backgroundRepeat = 'no-repeat, no-repeat';
+            }
+            
+            // 파비콘
+            const favicon = document.querySelector('link[rel="icon"]');
+            if (favicon) {
+                favicon.href = await getSecureImageUrl('ico.ico');
+            }
+            
+        }
+        
+        // 간단한 이미지 보안 기능
+        function addImageSecurity() {
+            // 모든 이미지에 우클릭 방지
+            document.addEventListener('contextmenu', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            
+            // 모든 이미지에 드래그 방지
+            document.addEventListener('dragstart', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        }
+        
+        // 페이지 로드 시 모든 기능 초기화
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 세션 토큰 발급
+            await generateSessionToken();
+            console.log("generateSessionToken");
+            // 보안 이미지 URL 로드
+            await loadSecureImageUrls();
+            console.log("loadSecureImageUrls");
+            loadHeaderAndFooter();
+            console.log("loadHeader");
+            // 보안 CSS 파일 로드
+            await loadSecureCssFiles();
+            console.log("loadSecureCssFiles");
+
+            // 모든 이미지 경로 업데이트
+            updateAllImagePaths();
+            console.log("updateAllImagePaths");
+
+            // 이미지 보안 기능 추가
+            addImageSecurity();
+            console.log("addImageSecurity");
+            // 메뉴 로드는 HeaderLoader에서 처리하므로 제거
+            // await loadMenus();
+            
+            // 공지사항 섹션 로드
+            loadNoticeSection();
+            console.log("loadNoticeSection");
+            
+            
+        });
+    </script>
+    
+    <script>
+
+
+        // ■■■■■■■■■■■■■gsap h1■■■■■■■■■■■■■■■
+        document.addEventListener("DOMContentLoaded", () => {
+
+            const isMobile = window.matchMedia("(max-width: 768px)").matches;
+            if (isMobile) {
+                return;
+            }
+
+            const h1s = document.querySelectorAll("h1");
+            const p = document.querySelector(".subtxt"); 
+            const a = document.querySelector(".area1__go"); 
+
+            h1s.forEach((h1) => {
+                const text = h1.textContent;
+                h1.textContent = ""; 
+                const letters = text.split("").map((letter) => {
+                    const span = document.createElement("span");
+                    span.textContent = letter;
+                    h1.appendChild(span);
+                    return span;
+                });
+
+                h1.letters = letters; // GSAP 타임라인 생성
+            });
+
+            const timeline = gsap.timeline();
+
+            timeline.from(h1s[0].letters, {
+                y: 100,
+                rotation: 10,
+                opacity: 0,
+                duration: 1.5,
+                stagger: 0.1,
+                ease: "power3.inOut",
+            });
+            timeline.from(h1s[1].letters, {
+                y: 100,
+                rotation: 10,
+                opacity: 0,
+                duration: 1.5,
+                stagger: 0.1,
+                ease: "power3.inOut",
+            }, "-=2.0");
+            timeline.from(p, {
+                opacity: 0,
+                y: 5,
+                duration: 1,
+                ease: "power3.out",
+            }, "+=0.1");
+            timeline.from(a, {
+                opacity: 0,
+                y: 5,
+                duration: 1,
+                ease: "power3.out",
+            }, "-=0.5");
+        });
+
+
+
+        // ■■■■■■■■■■■■■Animate On Scroll■■■■■■■■■■■■■■■
+        if (window.innerWidth <= 768) {
+            // AOS 요소에서 `data-aos` 속성 제거
+            document.querySelectorAll("[data-aos]").forEach(el => el.removeAttribute("data-aos"));
+        } else {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-out-expo',
+                debug: true,
+                once: true, 
+                // mirror: true,
+            });
+        }
+
+
+        // ■■■■■■■■■■■■■pure scroll■■■■■■■■■■■■■■■
+        document.addEventListener("DOMContentLoaded", function () {
+            const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+            if (isDesktop) {
+                function checkIfInView() {
+                    const animationClasses = ['fade_left', 'fade_up', 'opacity', 'scaleAni', 'scaleAni2', 'showimg'];
+
+                    animationClasses.forEach(animationClass => {
+                        const elements = document.querySelectorAll(`.${animationClass}`);
+                        elements.forEach(element => {
+                            const rect = element.getBoundingClientRect(); //뷰포트 위치
+                            const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+                            if (isVisible) {
+                                element.classList.add('in-view'); 
+                            } else {
+                                element.classList.remove('in-view');
+                            }
+                        });
+                    });
+                }
+
+                window.addEventListener('scroll', checkIfInView);
+                checkIfInView(); 
+
+                document.querySelectorAll('.areaMap__tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        setTimeout(() => {
+                            checkIfInView();
+                        }, 50);
+                    });
+                });
+            }
+        });
+
+        // ■■■■■■■■■■■■■swiper■■■■■■■■■■■■■■■
+        function updateSwiperOffset() {
+            return window.innerWidth > 768 ? (window.innerWidth - 1200) / 2 : 30;
+        }
+        // const swiperMap = new Swiper('.swiperMap', {
+        //     loop: true,
+        //     navigation: {
+        //         nextEl: '.map-arrow-r',
+        //         prevEl: '.map-arrow-l',
+        //     },
+        //     autoplay: false,
+        //     slidesPerView: 'auto',
+        //     slidesOffsetBefore: updateSwiperOffset(),
+        //     breakpoints: {
+        //         1024: { 
+        //             spaceBetween: 50 
+        //         },
+        //         0: { 
+        //             spaceBetween: 20 
+        //         }, 
+        //     }
+        // });
+        const swiperPartner = new Swiper('.swiperPartner', {
+            loop: true, 
+            navigation: {
+                nextEl: '.partner-arrow-r', 
+                prevEl: '.partner-arrow-l',
+            },
+            slidesPerView: 'auto',
+            breakpoints: {
+                768: { 
+                    spaceBetween: 50 
+                },
+                0: { 
+                    spaceBetween: 30,
+                    slidesOffsetBefore: 30
+                }, 
+            }
+        });
+
+
+    
+        // ■■■■■■■■■■■■■splide■■■■■■■■■■■■■■■
+        document.addEventListener('DOMContentLoaded', function () {
+            var splide1 = new Splide('#splide-main1', {
+                type      : 'loop',  
+                focus     : 'center',
+                perPage   : 3,
+                autoWidth : true,        // 슬라이드 폭 자동 조정
+                gap       : '35px',
+                arrows    : true,        // 이전/다음 버튼
+                pagination: false,
+                autoplay  : true,        // 자동재생 활성화
+                interval  : 5000,
+                pauseOnHover: false,
+                pauseOnFocus: false,
+            });
+
+            // 진행률 업데이트
+            var progressPath = document.querySelector('.progress');
+            var toggleBtn = document.querySelector('.toggle-btn');
+            var isPlaying = true;
+
+            splide1.on('mounted move', function () {
+                // 슬라이드 시작할 때 게이지 초기화 (0%)
+                progressPath.style.strokeDashoffset = 100;
+            });
+
+            splide1.on('autoplay:playing', function (rate) {
+                // 진행률만큼 게이지 채우기 (0~100)
+                progressPath.style.strokeDashoffset = 100 - rate * 100;
+            });
+
+            // 버튼 클릭으로 토글
+            toggleBtn.addEventListener('click', function () {
+                if (isPlaying) {
+                    splide1.Components.Autoplay.pause();
+                    toggleBtn.textContent = '▶'; // play 아이콘
+                } else {
+                    splide1.Components.Autoplay.play();
+                    toggleBtn.textContent = '❚❚'; // pause 아이콘
+                }
+                isPlaying = !isPlaying;
+            });
+
+            
+            var splide2 = new Splide('#splide-main2', {
+                // type   : 'loop',
+                drag   : 'free',
+                snap   : true,
+                perPage: 3,
+                gap: '20px',
+                fixedWidth: '520px', 
+                arrows    : false, 
+                padding: { left: (window.innerWidth - 1600) / 2, right: 0 },
+                breakpoints: {
+                    768: {
+                    fixedWidth: '268px',
+                    perPage: 1,
+                    padding: { left: 20, right: 0 },
+                    gap: '10px',
+                    }
+                }
+            });
+
+            splide1.mount();
+            splide2.mount();
+            
+            // 초기 상태 설정 - 자동재생 시작
+            setTimeout(() => {
+                if (splide1.Components.Autoplay) {
+                    splide1.Components.Autoplay.play();
+                    isPlaying = true;
+                    toggleBtn.textContent = '❚❚'; // pause 아이콘
+                }
+            }, 100);
+        });
+        // document.addEventListener('DOMContentLoaded', function () {
+        //     new Splide('#splideArea2', {
+        //         type: 'loop',  
+        //         focus: 'center', 
+        //         perPage: 1, 
+        //         fixedWidth: '1480px', // 슬라이드 너비를 1480px로 고정
+        //         width: '100%', // 부모 요소에 맞춤
+        //         gap: '35px', 
+        //         arrows: false, 
+        //         pagination: false, 
+        //         breakpoints: {
+        //             768: { 
+        //                 fixedWidth: '100%', 
+        //                 gap: '20px', 
+        //             }
+        //         }
+        //     }).mount();
+        // });
+
+
+
+
+
+
+    </script>
+    <button id="toTopBtn" class="to-top"><span>↑</span> TOP</button>
+    <script>
+        // API 기본 URL은 이미 위에서 정의됨
+        
+        
+        // 헤더 동적 로딩 클래스
+        class HeaderLoader {
+            constructor() {
+                this.init();
+            }
+            
+            async init() {
+                try {
+                    await this.loadPageSpecificCSS();
+                    await this.loadHeader();
+                    await this.loadHeaderScript();
+                } catch (error) {
+                    console.error('헤더 로딩 오류:', error);
+                    this.showError('헤더를 불러오는 중 오류가 발생했습니다.');
+                }
+            }
+            
+            // 페이지별 CSS 로드
+            async loadPageSpecificCSS() {
+                const pageCode = this.getPageCodeFromUrl();
+                let cssFile = '';
+                
+                // 페이지 코드에 따라 CSS 파일 결정
+                if (pageCode.startsWith('sub01')) {
+                    cssFile = './style/sub01.css';
+                } else if (pageCode.startsWith('sub02')) {
+                    cssFile = './style/sub02.css';
+                } else if (pageCode.startsWith('sub03')) {
+                    cssFile = './style/sub03.css';
+                } else if (pageCode.startsWith('sub04')) {
+                    cssFile = './style/sub04.css';
+                } else {
+                    // 기본값
+                    cssFile = './style/sub01.css';
+                }
+                
+                // CSS 파일 동적 로드
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = cssFile;
+                document.head.appendChild(link);
+            }
+            
+            // URL에서 페이지 코드 추출
+            getPageCodeFromUrl() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('page') || 'sub0101';
+            }
+            
+            async loadHeader() {
+                try {
+                    const response = await fetch('/api/header-section/html');
+                    
+                    if (!response.ok) {
+                        throw new Error(`서버 오류: ${response.status}`);
+                    }
+                    
+                    const htmlContent = await response.text();
+                    const headerContainer = document.getElementById('header');
+                    headerContainer.innerHTML = htmlContent;
+                    
+                } catch (error) {
+                    console.error('헤더 HTML 로딩 오류:', error);
+                    throw error;
+                }
+            }
+            
+            async loadHeaderScript() {
+                try {
+                    const response = await fetch('/api/header-section/script');
+                    
+                    if (!response.ok) {
+                        throw new Error(`서버 오류: ${response.status}`);
+                    }
+                    
+                    const scriptContent = await response.text();
+                    
+                    // 동적으로 스크립트 실행
+                    const script = document.createElement('script');
+                    script.textContent = scriptContent;
+                    document.head.appendChild(script);
+                    
+                     // 헤더 스크립트 로딩 후 메뉴 로드 및 호버 이벤트 초기화
+                     setTimeout(() => {
+                        this.loadMenusAndInitializeHover();
+                     }, 100);
+                    
+                } catch (error) {
+                    console.error('헤더 스크립트 로딩 오류:', error);
+                    // 스크립트 로딩 실패는 치명적이지 않으므로 에러를 던지지 않음
+                }
+            }
+            
+             // 메뉴 로드 및 호버 이벤트 초기화
+             async loadMenusAndInitializeHover() {
+                 try {
+                     await loadMenus();
+                     
+                     // 호버 이벤트 초기화
+                     this.initializeHeaderHover();
+                     
+                 } catch (error) {
+                     console.error('메뉴 로드 및 호버 초기화 오류:', error);
+                     // 오류가 발생해도 호버 이벤트는 초기화
+                     this.initializeHeaderHover();
+                 }
+             }
+             
+             // 헤더 호버 이벤트 초기화
+             initializeHeaderHover() {
+                 const header = document.querySelector('.header');
+                 const depth1Items = document.querySelectorAll('.header .header-gnb .gnb-depth-1 .depth-1');
+                 
+                 // 기존 이벤트 리스너 제거 (중복 방지)
+                 depth1Items.forEach((item, index) => {
+                     // 기존 이벤트 리스너 제거
+                     item.removeEventListener('mouseenter', item._mouseEnterHandler);
+                     item.removeEventListener('mouseleave', item._mouseLeaveHandler);
+                 });
+                 
+                 depth1Items.forEach((item, index) => {
+                     const depthItem = item.querySelector('.depth-item');
+                     if (depthItem) {
+                         // 이벤트 핸들러 함수 정의
+                         const mouseEnterHandler = function() {
+                             // 헤더에 open 클래스 추가
+                             if (header) {
+                                 header.classList.add('open');
+                             }
+                             item.classList.add('current');
+                             
+                             // 하위메뉴 표시
+                             depthItem.style.visibility = 'visible';
+                             depthItem.style.opacity = '1';
+                             
+                             // 높이 설정
+                             const targetMenu = item.querySelector('.gnb-depth-2');
+                             if (targetMenu) {
+                                 const targetHeight = targetMenu.getBoundingClientRect().height;
+                                 depthItem.style.height = `${targetHeight}px`;
+                             }
+                         };
+                         
+                         const mouseLeaveHandler = function() {
+                             // 헤더에서 open 클래스 제거
+                             if (header) {
+                                 header.classList.remove('open');
+                             }
+                             item.classList.remove('current');
+                             
+                             // 하위메뉴 숨김
+                             depthItem.style.visibility = 'hidden';
+                             depthItem.style.opacity = '0';
+                             depthItem.style.height = '0px';
+                         };
+                         
+                         // 이벤트 핸들러를 요소에 저장 (나중에 제거하기 위해)
+                         item._mouseEnterHandler = mouseEnterHandler;
+                         item._mouseLeaveHandler = mouseLeaveHandler;
+                         
+                         // 이벤트 리스너 등록
+                         item.addEventListener('mouseenter', mouseEnterHandler);
+                         item.addEventListener('mouseleave', mouseLeaveHandler);
+                     }
+                 });
+             }
+            
+            showError(message) {
+                const headerContainer = document.getElementById('header');
+                headerContainer.innerHTML = `
+                    <div class="header-loading" style="color: #e74c3c;">
+                        <p>${message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // DOM 로드 완료 후 헤더 로더 초기화
+        document.addEventListener("DOMContentLoaded", function () {
+            new HeaderLoader();
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const topBtn = document.getElementById("toTopBtn");
+
+            // 스크롤 감지
+            window.addEventListener("scroll", function () {
+                const showPoint = window.innerHeight * 1.2;
+
+                if (window.scrollY > showPoint) {
+                topBtn.classList.add("show");
+                } else {
+                topBtn.classList.remove("show");
+                }
+            });
+
+            // 클릭 시 맨 위로 스크롤
+            topBtn.addEventListener("click", function () {
+                window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+                });
+            });
+
+            // area2(trust benchmark) 박스 클릭 시 active 클래스 토글 및 5초 후 제거
+            const boxes = document.querySelectorAll(".area2 .box");
+
+            boxes.forEach(box => {
+                let timeoutId; // 각 박스별 타이머
+
+                box.addEventListener("click", function () {
+                if (this.classList.contains("active")) {
+                    // 이미 active → 즉시 제거 + 타이머 해제
+                    this.classList.remove("active");
+                    clearTimeout(timeoutId);
+                } else {
+                    // active 추가
+                    this.classList.add("active");
+
+                    // 5초 뒤 자동 제거
+                    clearTimeout(timeoutId); // 기존 타이머 있으면 취소
+                    timeoutId = setTimeout(() => {
+                    this.classList.remove("active");
+                    }, 5000);
+                }
+                });
+            });
+
+            // area4(award) 슬라이드 클릭 시 active 클래스 토글 및 5초 후 제거
+            const slides = document.querySelectorAll('.splide-main2 .splide__slide');
+            slides.forEach(slide => {
+                let timerId;
+
+                slide.addEventListener('click', e => {
+                    if (slide.classList.contains('active')) {
+                        slide.classList.remove('active');
+                        clearTimeout(timerId);
+                    } else {
+                        slide.classList.add('active');
+                        clearTimeout(timerId);
+                        timerId = setTimeout(() => {
+                            slide.classList.remove('active');
+                        }, 5000);
+                    }
+                });
+            });
+            
+        });
+        
+        // 공지사항 상세보기 함수
+        function viewNotice(noticeNo) {
+            // 상세페이지로 이동
+            window.location.href = `/sub0303.html?noticeNo=${noticeNo}`;
+        }
+    </script>
+        
+</body>
+</html>

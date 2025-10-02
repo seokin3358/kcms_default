@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kone.kitms.mybatis.mapper.KamsUserMapper">
+    <select id="countUsersUnderHierarchy">
+        SELECT COUNT(*) FROM kitms_user
+        <where>
+            <trim prefixOverrides="OR">
+                <!-- 그룹 레벨 직원 -->
+                <if test="groupNoList != null and groupNoList.size() > 0">
+                    OR (affiliation_type = '0'
+                    AND parents_key IN
+                    <foreach collection="groupNoList" item="no"
+                        open="(" separator="," close=")">
+                        #{no}
+                    </foreach>
+                    )
+                </if>
+                <!-- 법인 레벨 직원 -->
+                <if test="corpNoList != null and corpNoList.size() > 0">
+                    OR (affiliation_type = '1'
+                    AND parents_key IN
+                    <foreach collection="corpNoList" item="no" open="(" separator="," close=")">
+                        #{no}
+                    </foreach>
+                    )
+                </if>
+                <!-- 본부 레벨 직원 -->
+                <if test="headqNoList != null and headqNoList.size() > 0">
+                    OR (affiliation_type = '2'
+                    AND parents_key IN
+                    <foreach collection="headqNoList" item="no" open="(" separator="," close=")">
+                        #{no}
+                    </foreach>
+                    )
+                </if>
+                <!-- 팀 레벨 직원 -->
+                <if test="teamNoList != null and teamNoList.size() > 0">
+                    OR (affiliation_type = '3'
+                    AND parents_key IN
+                    <foreach collection="teamNoList" item="no" open="(" separator="," close=")">
+                        #{no}
+                    </foreach>
+                    )
+                </if>
+            </trim>
+        </where>
+    </select>
+
+    <select id="getAllUser">
+        SELECT
+            u.USER_NO,
+            u.USER_ID,
+            u.USER_NAME,
+            u.USER_ROLE,
+            o.ORGAN_NAME,
+            u.USER_EMAIL,
+            u.USER_MOBILE,
+            u.AUTH_CODE,
+            kct.value1 as organ_type_name,
+            kc.value AS auth_value,
+            (SELECT branch_name FROM KITMS_BRANCH WHERE BRANCH_NO = u.ONSITE_BRANCH_NO) AS ONSITE_BRANCH_NAME
+        FROM KITMS_USER u
+        LEFT JOIN KAMS_ORGANIZATION o
+            ON u.ORGAN_NO = o.ORGAN_NO
+        LEFT JOIN KAMS_CUSTOM_CODE kct
+            ON o.organ_type = kct.code
+            AND kct.GROUP_NO = 15
+        LEFT JOIN KITMS_CODE kc
+            ON kc.CODE = u.AUTH_CODE
+            AND CODE_GROUP = 'USER_AUTH_GROUP'
+        WHERE 1 = 1
+            AND u.ENABLE = 1
+        <if test="searchValue != null and searchValue != ''">
+            AND (
+            u.user_id LIKE CONCAT('%', #{searchValue}, '%')
+            OR u.user_name LIKE CONCAT('%', #{searchValue}, '%')
+            OR REPLACE(u.user_tel, '-', '') LIKE REPLACE(#{searchValue}, '-', '')
+            OR REPLACE(u.user_mobile, '-', '') LIKE REPLACE(#{searchValue}, '-', '')
+            OR u.user_email LIKE CONCAT('%', #{searchValue}, '%')
+            OR u.user_role LIKE CONCAT('%', #{searchValue}, '%')
+            OR o.organ_name LIKE CONCAT('%', #{searchValue}, '%')
+            OR kct.value1 LIKE CONCAT('%', #{searchValue}, '%')
+            OR kc.code = #{searchValue}
+            )
+        </if>
+        <if test="authCode != null and authCode != ''">
+            AND u.AUTH_CODE = #{authCode}
+        </if>
+        ORDER BY u.USER_ID
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="getAllUserTotal">
+        SELECT
+            COUNT(USER_NO)
+        FROM KITMS_USER u
+        LEFT JOIN KAMS_ORGANIZATION o
+            ON u.ORGAN_NO = o.ORGAN_NO
+        LEFT JOIN KAMS_CUSTOM_CODE kct
+            ON o.organ_type = kct.code
+            AND kct.GROUP_NO = 15
+        LEFT JOIN KITMS_CODE kc
+            ON kc.CODE = u.AUTH_CODE
+            AND CODE_GROUP = 'USER_AUTH_GROUP'
+        WHERE 1 = 1
+            AND u.ENABLE = 1
+        <if test="searchValue != null and searchValue != ''">
+            AND (
+            u.user_id LIKE CONCAT('%', #{searchValue}, '%')
+            OR u.user_name LIKE CONCAT('%', #{searchValue}, '%')
+            OR REPLACE(u.user_tel, '-', '') LIKE REPLACE(#{searchValue}, '-', '')
+            OR REPLACE(u.user_mobile, '-', '') LIKE REPLACE(#{searchValue}, '-', '')
+            OR u.user_email LIKE CONCAT('%', #{searchValue}, '%')
+            OR u.user_role LIKE CONCAT('%', #{searchValue}, '%')
+            OR o.organ_name LIKE CONCAT('%', #{searchValue}, '%')
+            OR kct.value1 LIKE CONCAT('%', #{searchValue}, '%')
+            OR kc.code = #{searchValue}
+            )
+        </if>
+        <if test="authCode != null and authCode != ''">
+            AND u.AUTH_CODE = #{authCode}
+        </if>
+    </select>
+
+    <select id="getUser">
+        SELECT
+            u.USER_NO,
+            u.USER_ID,
+            u.USER_PWD,
+            u.USER_NAME,
+            u.USER_TEL,
+            u.USER_MOBILE,
+            u.ENABLE,
+            u.USER_ETC,
+            u.VAC_START_DATE,
+            u.VAC_END_DATE,
+            u.CREATE_DT,
+            u.FIRST_FLAG,
+            u.USER_ROLE,
+            o.ORGAN_NO,
+            o.ORGAN_NAME,
+            (SELECT value1 FROM KAMS_CUSTOM_CODE KC WHERE KC.GROUP_NO = 15 AND o.ORGAN_TYPE = kc.CODE) AS ORGAN_TYPE_NAME,
+            (SELECT value FROM KITMS_CODE KC WHERE KC.CODE_GROUP = 'USER_AUTH_GROUP' AND KC.CODE = u.auth_code) AS AUTH_VALUE,
+            (SELECT branch_name FROM KITMS_BRANCH WHERE BRANCH_NO = u.ONSITE_BRANCH_NO) AS ONSITE_BRANCH_NAME
+        FROM KITMS_USER u
+        LEFT JOIN KAMS_ORGANIZATION o
+            ON u.ORGAN_NO = o.ORGAN_NO
+        WHERE 1 = 1
+            AND u.ENABLE = 1
+            AND u.USER_NO = #{id}
+    </select>
+
+    <select id="getUserByUserNo">
+        SELECT
+            u.USER_NO,
+            u.USER_ID,
+            u.USER_PWD,
+            u.USER_NAME,
+            u.USER_TEL,
+            u.USER_MOBILE,
+            u.ENABLE,
+            u.USER_ETC,
+            u.VAC_START_DATE,
+            u.VAC_END_DATE,
+            u.CREATE_DT,
+            u.FIRST_FLAG,
+            u.USER_ROLE,
+            o.ORGAN_NO,
+            o.ORGAN_NAME,
+            (SELECT value1 FROM KAMS_CUSTOM_CODE KC WHERE KC.GROUP_NO = 15 AND o.ORGAN_TYPE = kc.CODE) AS ORGAN_TYPE_NAME,
+            (SELECT value FROM KITMS_CODE KC WHERE KC.CODE_GROUP = 'USER_AUTH_GROUP' AND KC.CODE = u.auth_code) AS AUTH_VALUE,
+            (SELECT branch_name FROM KITMS_BRANCH WHERE BRANCH_NO = u.ONSITE_BRANCH_NO) AS ONSITE_BRANCH_NAME
+        FROM KITMS_USER u
+        LEFT JOIN KAMS_ORGANIZATION o
+            ON u.ORGAN_NO = o.ORGAN_NO
+        WHERE 1 = 1
+          AND u.ENABLE = 1
+          AND u.USER_NO = #{userNo}
+    </select>
+
+    <insert id="createUser">
+        INSERT INTO kitms_user
+        (user_id, user_pwd, user_name, user_tel, user_mobile, user_email, enable, user_etc, create_dt, create_user_id, first_flag, last_pass_mod_dt, auth_code, onsite_branch_no, user_role, organ_no)
+        VALUES(#{userId}, #{userPwd}, #{userName}, #{userTel}, #{userMobile} , #{userEmail}, 1, #{userEtc}, current_timestamp(), #{createUserId}, #{firstFlag}, #{lastPassModDt}, #{authCode}, #{onsiteBranchNo}, #{userRole}, #{organNo})
+    </insert>
+
+    <update id="updateUser">
+        UPDATE kitms_user
+        <set>
+            user_pwd = #{userPwd},
+            user_name = #{userName},
+            user_tel = #{userTel},
+            user_mobile = #{userMobile},
+            user_email = #{userEmail},
+            auth_code = #{authCode},
+            enable = #{enable},
+            user_etc = #{userEtc},
+            onsite_branch_no = #{onsiteBranchNo},
+            user_role = #{userRole},
+            organ_no = #{organNo},
+            create_dt= #{createDt},
+            create_user_id = #{createUserId},
+        </set>
+        WHERE user_no = #{userNo}
+    </update>
+
+    <delete id="deleteUser">
+        UPDATE kitms_user
+        <set>
+            enable = 0
+        </set>
+        WHERE user_no IN
+        <foreach collection="userNoList" item="no" open="(" separator="," close=")">
+            #{no}
+        </foreach>
+    </delete>
+
+    <select id="checkOrganMember">
+        SELECT
+            COUNT(USER_NO)
+        FROM KITMS_USER u
+        LEFT JOIN KAMS_ORGANIZATION ko
+            ON u.ORGAN_NO = ko.ORGAN_NO
+        WHERE u.ENABLE = 1
+            AND ko.ORGAN_TYPE = #{code}
+    </select>
+
+    <update id="moveUser">
+        UPDATE kitms_user
+        <set>
+            organ_no = #{organNo}
+        </set>
+        WHERE 1 = 1
+            AND enable = 1
+            AND user_no = #{userNo}
+    </update>
+
+    <select id="existEmailChk">
+        SELECT
+            COUNT(user_no)
+        FROM KITMS_USER
+        WHERE USER_EMAIL = #{userEmail}
+            AND USER_NO != #{userNo}
+    </select>
+
+    <select id="existUserId" parameterType="String">
+        SELECT COUNT(1) FROM KITMS_USER WHERE ENABLE = '1' AND USER_ID = #{userId}
+    </select>
+    <select id="existUserNo" parameterType="String">
+        SELECT COUNT(1) FROM KITMS_USER WHERE ENABLE = '1' AND USER_NO = #{userNo}
+    </select>
+
+    <select id="selectUserNoByUserId">
+        SELECT
+            user_no
+        FROM kitms_user
+        WHERE 1 = 1
+            AND enable = 1
+            AND user_id = #{userId}
+    </select>
+</mapper>
+

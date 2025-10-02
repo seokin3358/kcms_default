@@ -1,0 +1,409 @@
+.sub0401 {
+  margin-top: 0;
+  padding-top: 160px;
+}
+.sub0401 h3 {
+  font-size: 72px;
+  font-weight: 800;
+  margin-bottom: 96px;
+}
+
+.moreline {
+  text-align: center;
+}
+.moreline .more {
+  margin: 64px auto 0;
+  width: 240px;
+  height: 64px;
+  border: 1px solid #e0e0e0;
+  border-radius: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "RedHatDisplay";
+  font-size: 16px;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .moreline .more {
+    height: 54px;
+    font-size: 14px;
+    margin-top: 32px;
+  }
+}
+.sub0401 .board_list h3 {
+  font-size: 72px;
+  font-weight: 800;
+}
+.sub0401 .board ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+}
+.sub0401 .board ul li {
+  width: 512px;
+  height: 320px;
+}
+.sub0401 .board ul li a {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border: 1px solid #e5e5e5;
+  border-radius: 32px;
+  position: relative;
+}
+.sub0401 .board ul li a .tags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+.sub0401 .board ul li a .tag {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background-color: #f5f6f8;
+  margin-bottom: 15px;
+}
+.sub0401 .board ul li a .tit {
+  display: block;
+  font-size: 24px;
+  font-weight: bold;
+}
+.sub0401 .board ul li a .bottom {
+  display: flex;
+  align-items: center;
+  margin-top: auto;
+}
+.sub0401 .board ul li a .dday {
+  position: relative;
+  margin-right: 33px;
+  font-size: 16px;
+  font-family: "RedHatDisplay";
+  font-weight: bold;
+}
+.sub0401 .board ul li a .dday:after {
+  position: absolute;
+  right: -17px;
+  top: 6px;
+  width: 1px;
+  height: 12px;
+  border-right: 1px solid #D9D9D9;
+  content: "";
+}
+.sub0401 .board ul li a .date {
+  display: block;
+  font-size: 16px;
+  font-family: "RedHatDisplay";
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .sub0401 {
+    padding-top: 56px;
+  }
+  .sub0401 .board_list h3 {
+    font-size: 32px;
+    margin-bottom: 32px;
+  }
+  .sub0401 .board_list .loc {
+    display: none;
+  }
+  .sub0401 .board ul {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .sub0401 .board ul li {
+    width: 100%;
+    height: 240px;
+  }
+  .sub0401 .board ul li a {
+    padding: 24px;
+  }
+  .sub0401 .board ul li a .tags {
+    margin-bottom: 12px;
+  }
+  .sub0401 .board ul li a .tag {
+    font-size: 12px;
+    margin-bottom: 0;
+  }
+  .sub0401 .board ul li a .tit {
+    font-size: 17px;
+  }
+  .sub0401 .board ul li a .dday {
+    font-size: 14px;
+  }
+  .sub0401 .board ul li a .dday:after {
+    top: 4px;
+  }
+  .sub0401 .board ul li a .date {
+    font-size: 14px;
+  }
+}
+.sub0402.body {
+  background: url(../images/intro_sub0402.png) no-repeat top center;
+}
+
+.sub0402 .philasophy {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 96px;
+}
+.sub0402 .philasophy .l {
+  flex: 1;
+  font-weight: 800;
+  font-size: 56px;
+}
+.sub0402 .philasophy .r {
+  width: 1230px;
+  font-weight: 300;
+  font-size: 32px;
+}
+.sub0402 .koreano1 {
+  margin-top: 160px;
+}
+.sub0402 .koreano1 .tit {
+  margin-bottom: 12px;
+}
+.sub0402 .koreano1 .tit h3 {
+  display: inline;
+  font-size: 44px;
+  font-weight: 800;
+  font-family: "Redhatdisplay";
+}
+.sub0402 .koreano1 .tit .b {
+  color: #005CB9;
+}
+.sub0402 .koreano1 .subtit {
+  font-size: 20px;
+  font-weight: 300;
+  margin-bottom: 32px;
+}
+.sub0402 .talent {
+  height: 600px;
+  border-radius: 32px;
+  background: url(../images/sub0402_talent_bg1.png) no-repeat center;
+  transition: background-image 0.2s ease;
+}
+.sub0402 .talent ul {
+  display: flex;
+  border-radius: 32px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.sub0402 .talent ul li {
+  width: 400px;
+  height: 600px;
+  padding: 64px 40px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+.sub0402 .talent ul li h4 {
+  font-size: 28px;
+  font-family: "RedHatDisplay";
+  font-weight: 800;
+  color: #fff;
+  margin-top: 370px;
+  margin-bottom: 16px;
+  opacity: 0.56;
+  transition: margin-top 0.3s ease, opacity 0.3s ease, color 0.3s ease;
+}
+.sub0402 .talent ul li p {
+  font-family: "RedHatDisplay";
+  color: #fff;
+  opacity: 0.56;
+  transition: opacity 0.4s ease;
+}
+.sub0402 .talent ul li:hover {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.sub0402 .talent ul li:hover h4 {
+  margin-top: 300px;
+  opacity: 1;
+}
+.sub0402 .talent ul li:hover p {
+  opacity: 1;
+}
+.sub0402 .talent ul li:first-child {
+  border-top-left-radius: 32px;
+  border-bottom-left-radius: 32px;
+}
+.sub0402 .talent ul li:last-child {
+  border: 0;
+  border-top-right-radius: 32px;
+  border-bottom-right-radius: 32px;
+}
+.sub0402 .talent:has(ul > li:nth-child(1):hover) {
+  background-image: url(../images/sub0402_talent_bg1.png);
+}
+.sub0402 .talent:has(ul > li:nth-child(2):hover) {
+  background-image: url(../images/sub0402_talent_bg2.png);
+}
+.sub0402 .talent:has(ul > li:nth-child(3):hover) {
+  background-image: url(../images/sub0402_talent_bg3.png);
+}
+.sub0402 .talent:has(ul > li:nth-child(4):hover) {
+  background-image: url(../images/sub0402_talent_bg4.png);
+}
+.sub0402 .cards_wrap {
+  background-color: #F5F6F8;
+  padding: 160px 0;
+}
+.sub0402 .cards_wrap .cards {
+  width: 1600px;
+  margin: 0 auto;
+}
+.sub0402 .cards_wrap .cards .philasophy {
+  padding-top: 0;
+  margin-bottom: 160px;
+}
+.sub0402 .cards_wrap .cards h4 {
+  font-size: 32px;
+  font-weight: bold;
+  margin-top: 80px;
+  margin-bottom: 32px;
+}
+.sub0402 .cards_wrap .cards h4 .blue {
+  font-size: 32px;
+  color: #005CB9;
+  font-weight: bold;
+  font-family: "RedHatDisplay";
+}
+.sub0402 .cards_wrap .cards ul {
+  display: flex;
+  gap: 32px;
+}
+.sub0402 .cards_wrap .cards ul li {
+  width: calc((100% - 32px) / 2);
+  height: 365px;
+  background-color: #fff;
+  border-radius: 32px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+.sub0402 .cards_wrap .cards ul li .tit {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 48px 0 16px;
+}
+.sub0402 .cards_wrap .cards ul li .sub {
+  font-size: 20px;
+  font-weight: 300;
+}
+
+@media (max-width: 768px) {
+  .sub0402 .philasophy {
+    flex-direction: column;
+    padding-top: 48px;
+  }
+  .sub0402 .philasophy .l {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+  .sub0402 .philasophy .r {
+    font-size: 18px;
+    width: 100%;
+  }
+  .sub0402 .koreano1 {
+    margin-top: 72px;
+  }
+  .sub0402 .koreano1 .tit h3 {
+    font-size: 24px;
+  }
+  .sub0402 .koreano1 .subtit {
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+  .sub0402 .talent {
+    background: none;
+    overflow: hidden;
+    height: auto;
+  }
+  .sub0402 .talent ul {
+    flex-direction: column;
+  }
+  .sub0402 .talent ul li {
+    width: 100%;
+    height: 148px;
+    padding: 32px;
+  }
+  .sub0402 .talent ul li h4 {
+    font-size: 19px;
+    margin-top: 0;
+    opacity: 1;
+  }
+  .sub0402 .talent ul li p {
+    font-size: 15px;
+    opacity: 1;
+  }
+  .sub0402 .talent ul li:nth-child(1) {
+    background: url(../images/sub0402_talent_bg1.png) no-repeat center;
+    border-top-left-radius: 32px;
+    border-top-right-radius: 32px;
+    border-bottom-left-radius: 0;
+    background-size: cover;
+  }
+  .sub0402 .talent ul li:nth-child(2) {
+    background: url(../images/sub0402_talent_bg2.png) no-repeat center;
+    background-size: cover;
+  }
+  .sub0402 .talent ul li:nth-child(3) {
+    background: url(../images/sub0402_talent_bg3.png) no-repeat center;
+    background-size: cover;
+  }
+  .sub0402 .talent ul li:nth-child(4) {
+    background: url(../images/sub0402_talent_bg4.png) no-repeat center;
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+    border-top-right-radius: 0;
+    background-size: cover;
+  }
+  .sub0402 .talent ul li:hover h4 {
+    margin-top: 0;
+  }
+  .sub0402 .cards_wrap {
+    padding: 72px 0;
+  }
+  .sub0402 .cards_wrap .cards {
+    width: 100%;
+    padding: 0 20px;
+  }
+  .sub0402 .cards_wrap .cards .philasophy {
+    margin-bottom: 72px;
+  }
+  .sub0402 .cards_wrap .cards h4 {
+    font-size: 21px;
+    margin: 40px 0 16px;
+  }
+  .sub0402 .cards_wrap .cards h4 .blue {
+    font-size: 21px;
+  }
+  .sub0402 .cards_wrap .cards ul {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .sub0402 .cards_wrap .cards ul li {
+    width: 100%;
+    height: 206px;
+    border-radius: 24px;
+  }
+  .sub0402 .cards_wrap .cards ul li img {
+    width: 88px;
+    height: 88px;
+  }
+  .sub0402 .cards_wrap .cards ul li .tit {
+    font-size: 17px;
+    margin: 24px 0 8px;
+  }
+  .sub0402 .cards_wrap .cards ul li .sub {
+    font-size: 15px;
+  }
+}/*# sourceMappingURL=sub04.css.map */

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kone.kitms.mybatis.mapper.KitmsNoticeMapper">
+    <select id="getNoticeStaticList" parameterType="KitmsCommonParamVO" resultType="KitmsNoticeVO">
+        SELECT NOTICE_NO, NOTICE_TITLE, 
+               CASE WHEN STATIC_FLAG = 1 THEN '1' ELSE '0' END AS STATIC_FLAG, 
+               NOTICE_CONTENT,
+               DATE_FORMAT(CREATE_DT, '%m.%d') AS CREATE_DT,
+               CREATE_USER_ID,
+               (SELECT KU.USER_NAME FROM KITMS_USER KU WHERE KU.USER_ID = KN.CREATE_USER_ID LIMIT 1) AS CREATE_USER_NAME,
+               (SELECT CASE WHEN COUNT(1) > 0 THEN 'true' ELSE 'false' END FROM KITMS_ATTACH WHERE ATTACH_TABLE_NAME = 'KITMS_NOTICE'
+                                                 AND ATTACH_TABLE_PK = NOTICE_NO) AS FILE_EXIST
+        FROM KITMS_NOTICE KN
+        WHERE STATIC_FLAG = 1
+        ORDER BY CREATE_DT DESC, NOTICE_NO DESC
+        LIMIT #{noticeStaticCount}
+    </select>
+
+    <select id="getNoticeAllList" parameterType="KitmsCommonParamVO" resultType="KitmsNoticeVO">
+        SELECT WRAP2.* FROM ( SELECT COUNT(*) OVER() AS TOTAL_COUNT, WRAP1.* FROM (
+            SELECT ROW_NUMBER() OVER (ORDER BY STATIC_FLAG DESC, CREATE_DT DESC, NOTICE_NO DESC) RNUM,
+            NOTICE_NO, NOTICE_TITLE, 
+            CASE WHEN STATIC_FLAG = 1 THEN '1' ELSE '0' END AS STATIC_FLAG, 
+            NOTICE_CONTENT,
+            DATE_FORMAT(CREATE_DT, '%m.%d') AS CREATE_DT,
+            CREATE_USER_ID,
+            (SELECT KU.USER_NAME FROM KITMS_USER KU WHERE KU.USER_ID = KN.CREATE_USER_ID LIMIT 1) AS CREATE_USER_NAME,
+            (SELECT CASE WHEN COUNT(1) > 0 THEN 'true' ELSE 'false' END FROM KITMS_ATTACH WHERE ATTACH_TABLE_NAME = 'KITMS_NOTICE'
+                                                 AND ATTACH_TABLE_PK = NOTICE_NO) AS FILE_EXIST
+            FROM KITMS_NOTICE KN
+            WHERE 1=1
+            <if test="searchValue != null and searchValue != ''">
+                <choose>
+                    <when test='searchColumn == "noticeTitle"'>
+                        AND NOTICE_TITLE LIKE CONCAT('%', #{searchValue}, '%')
+                    </when>
+                    <when test='searchColumn == "noticeContent"'>
+                        AND NOTICE_CONTENT LIKE CONCAT('%', #{searchValue}, '%')
+                    </when>
+                    <when test='searchColumn == "createUserName"'>
+                        AND (SELECT KU.USER_NAME FROM KITMS_USER KU WHERE KU.USER_ID = KN.CREATE_USER_ID LIMIT 1)
+                        LIKE CONCAT('%', #{searchValue}, '%')
+                    </when>
+                    <otherwise>
+                        AND (NOTICE_TITLE LIKE CONCAT('%', #{searchValue}, '%')
+                             OR NOTICE_CONTENT LIKE CONCAT('%', #{searchValue}, '%')
+                             OR (SELECT KU.USER_NAME FROM KITMS_USER KU WHERE KU.USER_ID = KN.CREATE_USER_ID LIMIT 1)
+                                 LIKE CONCAT('%', #{searchValue}, '%'))
+                    </otherwise>
+                </choose>
+            </if>
+        ) WRAP1 ORDER BY WRAP1.RNUM ) WRAP2 WHERE WRAP2.RNUM BETWEEN #{start} AND #{end}
+    </select>
+</mapper>

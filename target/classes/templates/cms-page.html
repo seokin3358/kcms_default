@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="page-title" th:text="${content?.metaTitle ?: 'CMS 페이지'}">CMS 페이지</title>
+<meta name="description" id="meta-description" th:content="${content?.metaDescription ?: ''}" content="">
+<meta name="keywords" id="meta-keywords" th:content="${content?.metaKeywords ?: ''}" content="">
+
+<!-- 
+    KITMS CMS 페이지 템플릿
+    Thymeleaf를 사용한 서버사이드 렌더링 CMS 페이지입니다.
+    
+    주요 기능:
+    - Thymeleaf 템플릿 엔진을 통한 서버사이드 렌더링
+    - 데이터베이스 컨텐츠를 서버에서 직접 렌더링
+    - SEO 메타 정보 서버사이드 설정
+    - 공통 헤더/푸터 포함
+    
+    사용법: 컨트롤러에서 이 템플릿을 반환하여 사용
+    
+    @author KITMS Development Team
+    @version 1.0
+-->
+
+<!-- CSS 파일들 -->
+<link rel="stylesheet" href="/style/splide.min.css">
+<link rel="stylesheet" href="/style/reset.css">
+<link rel="stylesheet" href="/style/common.css">
+<link rel="stylesheet" href="/style/sub01.css">
+<link rel="stylesheet" href="/style/swiper-bundle.min.css" />
+<link rel="stylesheet" href="/style/aos.css">
+<link rel="stylesheet" href="/style/mobile.css">
+<link rel="icon" href="/images/ico.ico" type="image/x-icon">
+
+<style>
+/* CMS 전용 스타일 */
+.cms-loading {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+    color: #666;
+}
+
+.cms-error {
+    text-align: center;
+    padding: 50px;
+    color: #e74c3c;
+    background-color: #fdf2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    margin: 20px;
+}
+
+.cms-content {
+    min-height: 400px;
+}
+</style>
+</head>
+<body>
+    <!-- 헤더 영역 - Thymeleaf Fragment -->
+    <div th:replace="fragments/header :: header"></div>
+    
+    <!-- 메인 컨텐츠 영역 -->
+    <div id="main-content" class="body" th:classappend="${content?.pageCode ?: 'sub0101'}">
+        <!-- 로딩 상태 -->
+        <div id="loading" class="cms-loading" th:if="${content == null}">
+            <p>컨텐츠를 불러오는 중입니다...</p>
+        </div>
+        
+        <!-- 에러 상태 -->
+        <div id="error" class="cms-error" style="display: none;">
+            <h3>컨텐츠를 불러올 수 없습니다</h3>
+            <p id="error-message">페이지를 찾을 수 없거나 오류가 발생했습니다.</p>
+        </div>
+        
+        <!-- 실제 컨텐츠 영역 -->
+        <div id="content" class="cms-content" th:if="${content != null}" th:utext="${content.pageContent}">
+            <!-- 여기에 DB에서 가져온 컨텐츠가 동적으로 삽입됩니다 -->
+        </div>
+    </div>
+    
+    <!-- 푸터 영역 - Thymeleaf Fragment -->
+    <div th:replace="fragments/footer :: footer"></div>
+    
+    <!-- JavaScript 파일들 -->
+    <script src="/js/swiper-bundle.min.js"></script>
+    <script src="/js/splide.min.js"></script>
+    <script src="/js/aos.js"></script>
+    <script src="/js/gsap.min.js"></script>
+    <script src="/js/ScrollTrigger.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/header.js"></script>
+    
+    <!-- TOP 버튼 -->
+    <button id="toTopBtn" class="to-top"><span>↑</span> TOP</button>
+    
+    <script>
+        // CMS 컨텐츠 로딩 스크립트 (서버사이드 렌더링 시에는 필요 없음)
+        class CmsLoader {
+            constructor() {
+                this.pageCode = this.getPageCodeFromUrl();
+                // 서버사이드에서 이미 컨텐츠가 로드된 경우 스크립트 실행하지 않음
+                if (document.getElementById('content').innerHTML.trim() !== '') {
+                    this.setupTopButton();
+                    return;
+                }
+                this.init();
+            }
+            
+            // URL에서 페이지 코드 추출
+            getPageCodeFromUrl() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('page') || 'sub0101'; // 기본값
+            }
+            
+            // 초기화
+            async init() {
+                try {
+                    await this.loadContent();
+                    this.setupTopButton();
+                } catch (error) {
+                    console.error('CMS 초기화 오류:', error);
+                    this.showError('페이지를 불러오는 중 오류가 발생했습니다.');
+                }
+            }
+            
+            // 컨텐츠 로딩
+            async loadContent() {
+                try {
+                    const response = await fetch(`/api/cms/content/${this.pageCode}`);
+                    
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            throw new Error('요청하신 페이지를 찾을 수 없습니다.');
+                        }
+                        throw new Error(`서버 오류: ${response.status}`);
+                    }
+                    
+                    const content = await response.json();
+                    this.renderContent(content);
+                    
+                } catch (error) {
+                    console.error('컨텐츠 로딩 오류:', error);
+                    throw error;
+                }
+            }
+            
+            // 컨텐츠 렌더링
+            renderContent(content) {
+                // 로딩 상태 숨기기
+                document.getElementById('loading').style.display = 'none';
+                
+                // 메타 정보 설정
+                if (content.metaTitle) {
+                    document.getElementById('page-title').textContent = content.metaTitle;
+                    document.title = content.metaTitle;
+                }
+                
+                if (content.metaDescription) {
+                    document.getElementById('meta-description').setAttribute('content', content.metaDescription);
+                }
+                
+                if (content.metaKeywords) {
+                    document.getElementById('meta-keywords').setAttribute('content', content.metaKeywords);
+                }
+                
+                // 컨텐츠 삽입
+                const contentElement = document.getElementById('content');
+                contentElement.innerHTML = content.pageContent;
+                contentElement.style.display = 'block';
+                
+                // AOS 초기화 (애니메이션 효과)
+                if (typeof AOS !== 'undefined') {
+                    AOS.init();
+                }
+            }
+            
+            // 에러 표시
+            showError(message) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error-message').textContent = message;
+            }
+            
+            // TOP 버튼 설정
+            setupTopButton() {
+                const topBtn = document.getElementById("toTopBtn");
+                
+                // 스크롤 감지
+                window.addEventListener("scroll", function () {
+                    const showPoint = window.innerHeight * 1.2;
+                    
+                    if (window.scrollY > showPoint) {
+                        topBtn.classList.add("show");
+                    } else {
+                        topBtn.classList.remove("show");
+                    }
+                });
+                
+                // 클릭 시 맨 위로 스크롤
+                topBtn.addEventListener("click", function () {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: "smooth"
+                    });
+                });
+            }
+        }
+        
+        // DOM 로드 완료 후 CMS 로더 초기화
+        document.addEventListener("DOMContentLoaded", function () {
+            new CmsLoader();
+        });
+    </script>
+</body>
+</html>

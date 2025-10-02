@@ -1,0 +1,14 @@
+$blue-color:#09A7E2;
+
+@mixin font-style(
+    $family: RedHatDisplay,
+    $size: 70px, 
+    $weight: Bold,
+    $color: black,
+) {
+    font-family: $family;
+    font-size: $size;
+    font-weight: $weight;
+    color: $color;
+}
+// @include font-style($size: 100px, $color: #333);

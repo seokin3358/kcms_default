@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 관리 - KITMS 관리자</title>
+    <link rel="icon" href="./images/ico.ico" type="image/x-icon">
+    <!-- 권한 체크 스크립트 -->
+    <script src="../common/admin-permission.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 사이드바는 공통 컴포넌트로 로드 */
+
+        /* 메인 콘텐츠 */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.sidebar-collapsed {
+            margin-left: 60px;
+        }
+
+        /* 모바일 반응형 */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.sidebar-collapsed {
+                margin-left: 0;
+            }
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        /* 관리자 관리 콘텐츠 */
+        .content-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .content-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        /* 관리자 목록 */
+        .admin-list {
+            margin-bottom: 30px;
+        }
+
+        .admin-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .admin-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .admin-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .admin-meta {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .admin-status {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .role-badge {
+            background: #e2e3e5;
+            color: #383d41;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        /* 체크박스 스타일 */
+        .form-group label.checkbox-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 8px 0;
+        }
+
+        .form-group label.checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+            margin-bottom: 0;
+            cursor: pointer;
+            transform: scale(1.2);
+        }
+
+        /* 메뉴 권한 선택 스타일 */
+        .menu-permissions-container {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            margin-top: 10px;
+        }
+
+        .permission-header {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .menu-permissions-list {
+            max-height: 200px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .menu-permission-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background-color: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            transition: background-color 0.2s;
+        }
+
+        .menu-permission-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .menu-permission-item input[type="checkbox"] {
+            margin: 0;
+            transform: scale(1.1);
+        }
+
+        .menu-permission-item label {
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+            font-size: 13px;
+            font-weight: normal;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .content-card {
+                padding: 20px;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .admin-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- 공통 사이드바 로드 -->
+        <div id="adminSidebarContainer"></div>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="main-content">
+            <header class="header">
+                <h1 class="header-title">관리자 관리</h1>
+                <div class="user-info">
+                    <span class="user-name" id="headerUserName" data-username="${username}">관리자</span>
+                    <button class="logout-btn" onclick="logout()">로그아웃</button>
+                </div>
+            </header>
+
+            <div class="content-card">
+                <div class="content-header">
+                    <h2 class="content-title">관리자 계정 목록</h2>
+                    <button class="btn btn-primary" onclick="openModal('create')">새 관리자 추가</button>
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+
+                <div class="admin-list" id="adminList">
+                    <div class="loading">관리자 목록을 불러오는 중...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 관리자 작성/수정 모달 -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">새 관리자 추가</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <form id="adminForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userId">아이디</label>
+                        <input type="text" id="userId" name="userId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userName">이름</label>
+                        <input type="text" id="userName" name="userName" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">비밀번호</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">비밀번호 확인</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userEmail">이메일</label>
+                        <input type="email" id="userEmail" name="userEmail">
+                    </div>
+                    <div class="form-group">
+                        <label for="userPhone">전화번호</label>
+                        <input type="tel" id="userPhone" name="userPhone">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="userRole">권한</label>
+                    <select id="userRole" name="userRole" required onchange="toggleMenuPermissions()">
+                        <option value="001">메인 관리자</option>
+                        <option value="002">서브 관리자</option>
+                    </select>
+                </div>
+                
+                <!-- 메뉴 권한 선택 (서브 관리자만 표시) -->
+                <div id="menuPermissionsSection" class="form-group" style="display: none;">
+                    <label>메뉴 권한</label>
+                    <div class="menu-permissions-container">
+                        <div class="permission-header">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="selectAllMenus" onchange="toggleAllMenus()"> 전체 선택
+                            </label>
+                        </div>
+                        <div id="menuPermissionsList" class="menu-permissions-list">
+                            <!-- 동적으로 생성될 메뉴 권한 체크박스들 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="useFlag" name="useFlag" checked> 계정 활성화
+                    </label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">취소</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '/api';
+        let currentUserId = null;
+        let allMenus = [];
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', function() {
+            initializeAdmin();
+        });
+
+        function initializeAdmin() {
+            // Spring Security 세션 기반 인증이므로 별도의 토큰 검증 불필요
+            // 사용자 정보는 서버에서 전달받은 정보 사용
+            const userNameElement = document.getElementById('headerUserName');
+            
+            if (userNameElement) {
+                // 서버에서 전달받은 사용자명이 있으면 사용, 없으면 기본값
+                const serverUserName = userNameElement.getAttribute('data-username');
+                
+                // ${username}이 치환되지 않은 경우, 서버에서 사용자명을 직접 가져오기
+                if (serverUserName && serverUserName !== '${username}') {
+                    userNameElement.textContent = serverUserName;
+                } else {
+                    // 서버에서 현재 사용자 정보 가져오기
+                    fetch('/api/kitms-users/current', {
+                        method: 'GET',
+                        credentials: 'include'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.statusCode === 200 && data.data) {
+                            const currentUser = data.data;
+                            userNameElement.textContent = currentUser.resultInfo.userName;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('사용자 정보 가져오기 오류:', error);
+                    });
+                }
+            }
+
+            // 관리자 목록 로드
+            loadAdmins();
+        }
+
+        async function loadAdmins() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitms-users/all`, {
+                    method: 'GET',
+                    credentials: 'include' // 세션 쿠키 포함
+                });
+                
+                const data = await response.json();
+                
+                if (data.statusCode === 200) {
+                    displayAdmins(data.data.list || []);
+                } else {
+                    showError('관리자 목록을 불러오는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('관리자 목록 로드 오류:', error);
+                showError('관리자 목록을 불러오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        function displayAdmins(admins) {
+            const adminList = document.getElementById('adminList');
+            
+            if (!admins || admins.length === 0) {
+                adminList.innerHTML = '<div class="loading">등록된 관리자가 없습니다.</div>';
+                return;
+            }
+
+            const adminHTML = admins.map(admin => {
+                const roleNames = {
+                    '001': '메인 관리자',
+                    '002': '서브 관리자'
+                };
+                
+                const isActive = admin.useFlag === '1';
+                const statusBadge = isActive 
+                    ? '<span class="status-badge status-active">활성</span>'
+                    : '<span class="status-badge status-inactive">비활성</span>';
+                
+                // authCode를 우선으로 하고, 없으면 userRole 사용
+                const roleCode = admin.authCode || admin.userRole;
+                const roleBadge = `<span class="role-badge">${roleNames[roleCode] || '알 수 없음'}</span>`;
+                
+                return `
+                    <div class="admin-item">
+                        <div class="admin-header">
+                            <div class="admin-info">
+                                <div class="admin-avatar">${admin.userName ? admin.userName.charAt(0) : admin.userId.charAt(0)}</div>
+                                <div class="admin-details">
+                                    <div class="admin-name">${admin.userName || admin.userId}</div>
+                                    <div class="admin-meta">
+                                        ID: ${admin.userId} | 
+                                        이메일: ${admin.userEmail || 'N/A'} | 
+                                        전화: ${admin.userTel || 'N/A'}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="admin-actions">
+                                <button class="btn btn-warning" onclick="editAdmin('${admin.userId}')">수정</button>
+                                <button class="btn btn-danger" onclick="deleteAdmin('${admin.userId}')">삭제</button>
+                            </div>
+                        </div>
+                        <div class="admin-status">
+                            ${statusBadge}
+                            ${roleBadge}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            adminList.innerHTML = adminHTML;
+        }
+
+        function openModal(mode, userId = null) {
+            currentUserId = userId;
+            const modal = document.getElementById('adminModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const form = document.getElementById('adminForm');
+            
+            // 모달을 먼저 열기
+            modal.style.display = 'block';
+            
+            if (mode === 'create') {
+                modalTitle.textContent = '새 관리자 추가';
+                form.reset();
+                document.getElementById('useFlag').checked = true;
+                // 메뉴 권한 섹션 숨기기
+                document.getElementById('menuPermissionsSection').style.display = 'none';
+                // 메뉴 목록 로드
+                loadAllMenus();
+            } else if (mode === 'edit') {
+                modalTitle.textContent = '관리자 수정';
+                // 모달이 열린 후 데이터 로드
+                setTimeout(() => {
+                    loadAdminData(userId);
+                }, 50);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('adminModal').style.display = 'none';
+            currentUserId = null;
+        }
+
+        // 메뉴 권한 관련 함수들
+        async function loadAllMenus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin-menu-permissions/all-menus`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    allMenus = await response.json();
+                } else {
+                    console.error('메뉴 목록 로드 실패:', response.status);
+                }
+            } catch (error) {
+                console.error('메뉴 목록 로드 오류:', error);
+            }
+        }
+
+        function toggleMenuPermissions() {
+            const userRole = document.getElementById('userRole').value;
+            const menuPermissionsSection = document.getElementById('menuPermissionsSection');
+            
+            if (userRole === '002') { // 서브 관리자
+                menuPermissionsSection.style.display = 'block';
+                if (allMenus.length === 0) {
+                    loadAllMenus().then(() => {
+                        renderMenuPermissions();
+                    });
+                } else {
+                    renderMenuPermissions();
+                }
+            } else { // 메인 관리자 (001)
+                menuPermissionsSection.style.display = 'none';
+            }
+        }
+
+        function renderMenuPermissions() {
+            const menuPermissionsList = document.getElementById('menuPermissionsList');
+            menuPermissionsList.innerHTML = '';
+            
+            allMenus.forEach(menu => {
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-permission-item';
+                
+                menuItem.innerHTML = `
+                    <input type="checkbox" id="menu_${menu.menuNo}" value="${menu.menuNo}" onchange="updateSelectAllStatus()">
+                    <label for="menu_${menu.menuNo}">${menu.menuName}</label>
+                `;
+                
+                menuPermissionsList.appendChild(menuItem);
+            });
+        }
+
+        function toggleAllMenus() {
+            const selectAllCheckbox = document.getElementById('selectAllMenus');
+            const menuCheckboxes = document.querySelectorAll('#menuPermissionsList input[type="checkbox"]');
+            
+            menuCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+        }
+
+        function updateSelectAllStatus() {
+            const selectAllCheckbox = document.getElementById('selectAllMenus');
+            const menuCheckboxes = document.querySelectorAll('#menuPermissionsList input[type="checkbox"]');
+            const checkedCount = document.querySelectorAll('#menuPermissionsList input[type="checkbox"]:checked').length;
+            
+            selectAllCheckbox.checked = checkedCount === menuCheckboxes.length;
+            selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < menuCheckboxes.length;
+        }
+
+        async function loadUserMenuPermissions(userId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin-menu-permissions/user/${userId}/with-menus`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // 오류 응답 체크
+                    if (data.error) {
+                        console.error('서버 오류:', data.error);
+                        showError('메뉴 권한 로드 중 오류가 발생했습니다: ' + data.error);
+                        return;
+                    }
+                    
+                    allMenus = data.allMenus || [];
+                    const userPermissions = data.userPermissions || {};
+                    
+                    // 메뉴 권한 UI 렌더링
+                    renderMenuPermissions();
+                    
+                    // DOM 렌더링 완료 후 체크박스 설정
+                    setTimeout(() => {
+                        Object.keys(userPermissions).forEach(menuNo => {
+                            const checkbox = document.getElementById(`menu_${menuNo}`);
+                            if (checkbox) {
+                                checkbox.checked = userPermissions[menuNo];
+                            }
+                        });
+                        updateSelectAllStatus();
+                    }, 100);
+                } else {
+                    console.error('사용자 메뉴 권한 로드 실패:', response.status);
+                    const errorData = await response.json().catch(() => ({}));
+                    showError('메뉴 권한 로드 실패: ' + (errorData.error || response.status));
+                }
+            } catch (error) {
+                console.error('사용자 메뉴 권한 로드 오류:', error);
+            }
+        }
+
+        function getUserMenuPermissions() {
+            const menuPermissions = {};
+            const menuCheckboxes = document.querySelectorAll('#menuPermissionsList input[type="checkbox"]');
+            
+            menuCheckboxes.forEach(checkbox => {
+                menuPermissions[parseInt(checkbox.value)] = checkbox.checked;
+            });
+            
+            return menuPermissions;
+        }
+
+        async function loadAdminData(userId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitms-users/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // 세션 쿠키 포함
+                });
+                
+                const data = await response.json();
+                
+                if (data.statusCode === 200) {
+                    const admin = data.data.resultInfo;
+
+                    
+                    // DOM 요소가 완전히 로드된 후 값을 설정
+                    setTimeout(() => {
+                        const userIdElement = document.getElementById('userId');
+                        const userNameElement = document.getElementById('userName');
+                        const userEmailElement = document.getElementById('userEmail');
+                        const userPhoneElement = document.getElementById('userPhone');
+                        const userRoleElement = document.getElementById('userRole');
+                        const useFlagElement = document.getElementById('useFlag');
+                        
+                        if (userIdElement) {
+                            userIdElement.value = admin.userId || '';
+                            userIdElement.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        
+                        if (userNameElement) {
+                            userNameElement.value = admin.userName || '';
+                        }
+                        
+                        if (userEmailElement) {
+                            userEmailElement.value = admin.userEmail || '';
+                            userEmailElement.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        
+                        if (userPhoneElement) {
+                            userPhoneElement.value = admin.userTel || '';
+                            userPhoneElement.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        
+                        if (userRoleElement) {
+                            userRoleElement.value = admin.authCode || '';
+                            userRoleElement.dispatchEvent(new Event('change', { bubbles: true }));
+                            
+                            // 권한에 따라 메뉴 권한 섹션 표시/숨김
+                            if (admin.authCode === '002') { // 서브 관리자
+                                document.getElementById('menuPermissionsSection').style.display = 'block';
+                                // 메뉴 권한 로드
+                                loadUserMenuPermissions(userId);
+                            } else { // 메인 관리자 (001)
+                                document.getElementById('menuPermissionsSection').style.display = 'none';
+                            }
+                        }
+                        
+                        if (useFlagElement) {
+                            useFlagElement.checked = admin.useFlag === '1';
+                        }
+                    
+                    // 수정 모드에서는 비밀번호 필드 숨기기
+                        const passwordElement = document.getElementById('password');
+                        const confirmPasswordElement = document.getElementById('confirmPassword');
+                        if (passwordElement) passwordElement.required = false;
+                        if (confirmPasswordElement) confirmPasswordElement.required = false;
+                    }, 100);
+                } else {
+                    showError('관리자 정보를 불러오는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('관리자 데이터 로드 오류:', error);
+                showError('관리자 정보를 불러오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        function editAdmin(userId) {
+            openModal('edit', userId);
+        }
+
+        async function deleteAdmin(userId) {
+            if (!confirm('정말로 이 관리자를 삭제하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/kitms-users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // 세션 쿠키 포함
+                });
+                
+                const data = await response.json();
+                
+                if (data.statusCode === 200) {
+                    showSuccess('관리자가 삭제되었습니다.');
+                    loadAdmins();
+                } else {
+                    showError('관리자 삭제에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('관리자 삭제 오류:', error);
+                showError('관리자 삭제 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 폼 제출 처리
+        document.getElementById('adminForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showError('비밀번호가 일치하지 않습니다.');
+                return;
+            }
+            
+            const params = {
+                userId: document.getElementById('userId').value,
+                userName: document.getElementById('userName').value,
+                password: password,
+                userEmail: document.getElementById('userEmail').value,
+                userPhone: document.getElementById('userPhone').value,
+                userRole: document.getElementById('userRole').value,
+                useFlag: document.getElementById('useFlag').checked ? '1' : '0'
+            };
+            
+
+            try {
+                const url = currentUserId 
+                    ? `${API_BASE_URL}/kitms-users` // 수정
+                    : `${API_BASE_URL}/kitms-users`; // 생성
+                
+                const method = currentUserId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(params),
+                    credentials: 'include' // 세션 쿠키 포함
+                });
+                
+                const data = await response.json();
+                
+                if (data.statusCode === 200) {
+                    // 서브 관리자인 경우 메뉴 권한도 저장
+                    const userRole = document.getElementById('userRole').value;
+                    if (userRole === '002') { // 서브 관리자
+                        try {
+                            const menuPermissions = getUserMenuPermissions();
+                            const menuResponse = await fetch(`${API_BASE_URL}/admin-menu-permissions/user/${params.userId}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(menuPermissions),
+                                credentials: 'include'
+                            });
+                            
+                            const menuResult = await menuResponse.json();
+                            if (!menuResult.success) {
+                                throw new Error(menuResult.message || '메뉴 권한 저장 실패');
+                            }
+                        } catch (menuError) {
+                            console.error('메뉴 권한 저장 오류:', menuError);
+                            showError('관리자는 저장되었지만 메뉴 권한 저장에 실패했습니다: ' + menuError.message);
+                            return;
+                        }
+                    }
+                    // 메인 관리자(001)인 경우 메뉴 권한 저장 건너뛰기
+                    
+                    showSuccess(currentUserId ? '관리자가 수정되었습니다.' : '관리자가 추가되었습니다.');
+                    closeModal();
+                    loadAdmins();
+                } else {
+                    showError(data.message || '관리자 저장에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('관리자 저장 오류:', error);
+                showError('관리자 저장 중 오류가 발생했습니다.');
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function logout() {
+            // Spring Security 로그아웃 처리
+            window.location.href = '/admin/logout';
+        }
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('adminModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // 공통 사이드바 로드
+        async function loadAdminSidebar() {
+            try {
+                const response = await fetch('/admin/common/admin-sidebar.html');
+                if (response.ok) {
+                    const sidebarHTML = await response.text();
+                    const container = document.getElementById('adminSidebarContainer');
+                    if (container) {
+                        container.innerHTML = sidebarHTML;
+                        
+                        // 사이드바 로드 후 이벤트 리스너 등록
+                        setupSidebarEvents();
+                        
+                        // 권한 기반 메뉴 로드
+                        loadAccessibleAdminMenus();
+                    } else {
+                        console.error('Admin sidebar container not found');
+                    }
+                } else {
+                    console.error('Failed to load admin sidebar, status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading admin sidebar:', error);
+            }
+        }
+
+        // 권한 기반 어드민 메뉴 로드
+        async function loadAccessibleAdminMenus() {
+            try {
+                const response = await fetch(`${window.location.origin}/api/admin-menus/accessible`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const menus = await response.json();
+                    renderMenus(menus);
+                } else {
+                    console.error('Failed to load accessible menus, status:', response.status);
+                    showMenuError('메뉴를 불러오는데 실패했습니다. (상태: ' + response.status + ')');
+                }
+            } catch (error) {
+                console.error('Error loading accessible admin menus:', error);
+                showMenuError('메뉴를 불러오는 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 어드민 메뉴 로드 (기존 함수 유지 - 호환성)
+        async function loadAdminMenus() {
+            return loadAccessibleAdminMenus();
+        }
+
+        // 메뉴 렌더링
+        function renderMenus(menus) {
+            const menuContainer = document.getElementById('sidebarMenu');
+            
+            if (!menuContainer) {
+                console.error('Menu container not found!');
+                return;
+            }
+            
+            if (menus.length === 0) {
+                menuContainer.innerHTML = '<li class="loading">등록된 메뉴가 없습니다.</li>';
+                return;
+            }
+
+            menuContainer.innerHTML = menus.map(menu => `
+                <li class="menu-item">
+                    <a class="menu-link" 
+                       href="${menu.menuUrl || '#'}" 
+                       data-menu-id="${menu.menuNo}">
+                        <span class="menu-icon">${getMenuIcon(menu.menuIcon)}</span>
+                        <span class="menu-text">${menu.menuName}</span>
+                    </a>
+                </li>
+            `).join('');
+        }
+
+        // 메뉴 아이콘 매핑
+        function getMenuIcon(iconName) {
+            const iconMap = {
+                'dashboard': '📊',
+                'content_copy': '📄',
+                'people': '👥',
+                'settings': '⚙️',
+                'announcement': '📢',
+                'newspaper': '📰',
+                'menu': '📋',
+                'admin_panel_settings': '👤',
+                'tune': '🎛️',
+                'history': '📜'
+            };
+            return iconMap[iconName] || '📁';
+        }
+
+        // 메뉴 오류 표시
+        function showMenuError(message) {
+            const menuContainer = document.getElementById('sidebarMenu');
+            if (menuContainer) {
+                menuContainer.innerHTML = `<li class="loading">${message}</li>`;
+            }
+        }
+
+        // 사이드바 이벤트 설정
+        function setupSidebarEvents() {
+            // 사이드바 토글 이벤트
+            const toggleBtn = document.querySelector('.sidebar-toggle');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    const sidebar = document.getElementById('adminSidebar');
+                    const mainContent = document.querySelector('.main-content');
+                    
+                    if (sidebar && mainContent) {
+                        sidebar.classList.toggle('collapsed');
+                        mainContent.classList.toggle('sidebar-collapsed');
+                    }
+                });
+            }
+        }
+
+        // 페이지 로드 시 사이드바 로드
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAdminSidebar();
+        });
+    </script>
+</body>
+</html>
+

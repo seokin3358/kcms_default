@@ -1,0 +1,306 @@
+@charset "UTF-8";
+.sub0201.body {
+  background: url(../images/intro_sub0201.png) no-repeat top center;
+}
+
+.sub0202.body {
+  background: url(../images/intro_sub0202.png) no-repeat top center;
+}
+
+@media (max-width: 768px) {
+  [class^=sub020].body {
+    background-size: auto 580px;
+  }
+}
+.sub0201 .philasophy {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 96px;
+}
+.sub0201 .philasophy .l {
+  flex: 1;
+  font-weight: 800;
+  font-size: 56px;
+}
+.sub0201 .philasophy .r {
+  width: 1230px;
+  font-weight: 300;
+  font-size: 32px;
+}
+.sub0201 .koreano1 {
+  margin-top: 160px;
+}
+.sub0201 .koreano1 .tit {
+  margin-bottom: 12px;
+}
+.sub0201 .koreano1 .tit h3 {
+  display: inline;
+  font-size: 44px;
+  font-weight: 800;
+  font-family: "Redhatdisplay";
+}
+.sub0201 .koreano1 .tit .b {
+  color: #005CB9;
+}
+.sub0201 .koreano1 .subtit {
+  font-size: 20px;
+  font-weight: 300;
+  margin-bottom: 32px;
+}
+.sub0201 .longimg {
+  background: url(../images/sub0201_koreano1.png) no-repeat center;
+  width: 100%;
+  height: 360px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 96px;
+}
+.sub0201 .longimg h3 {
+  color: #fff;
+  font-size: 44px;
+  font-weight: 800;
+}
+.sub0201 .longimg p {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 300;
+}
+.sub0201 .business {
+  width: 1330px;
+  margin: 0 auto;
+  position: relative;
+}
+.sub0201 .business li {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 88px;
+}
+.sub0201 .business li .l {
+  width: 665px;
+}
+.sub0201 .business li .r {
+  width: 520px;
+}
+.sub0201 .business li .r h4 {
+  font-size: 35px;
+  font-weight: 800;
+  font-family: "RedHatDisplay";
+  margin-bottom: 12px;
+  padding-top: 64px;
+}
+.sub0201 .business li .r .subtit {
+  font-size: 16px;
+  font-weight: 300;
+  margin-bottom: 56px;
+}
+.sub0201 .business li .r .txt {
+  font-size: 20px;
+  font-weight: 300;
+}
+.sub0201 .business li:nth-child(2n) .l {
+  order: 2;
+  text-align: right;
+}
+.sub0201 .business li:nth-child(2n) .r {
+  order: 1;
+}
+
+.business_wrap {
+  position: relative;
+}
+
+.business_wrap:after {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  border-right: 1px solid #A9A9AC;
+  content: "";
+  z-index: 1;
+}
+
+.business li {
+  position: relative;
+}
+.business li::before {
+  position: absolute;
+  left: calc(50% - 4px);
+  top: 82px;
+  width: 10px;
+  height: 12px;
+  background-color: #fff;
+  content: "";
+  z-index: 3;
+}
+.business li::after {
+  position: absolute;
+  left: calc(50% - 1px);
+  top: 85px;
+  width: 5px;
+  height: 5px;
+  background-color: #A9A9AC;
+  content: "";
+  border-radius: 10px;
+  z-index: 4;
+}
+
+@media (max-width: 768px) {
+  .sub0201 .philasophy {
+    flex-direction: column;
+    padding-top: 48px;
+  }
+  .sub0201 .philasophy .l {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+  .sub0201 .philasophy .r {
+    font-size: 18px;
+    width: 100%;
+  }
+  .sub0201 .koreano1 {
+    margin-top: 72px;
+  }
+  .sub0201 .koreano1 .tit h3 {
+    font-size: 24px;
+  }
+  .sub0201 .koreano1 .subtit {
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+  .sub0201 .longimg {
+    gap: 16px;
+    border-radius: 24px;
+    height: 200px;
+    margin-bottom: 32px;
+  }
+  .sub0201 .longimg h3 {
+    text-align: center;
+    font-size: 24px;
+    line-height: 32px;
+  }
+  .sub0201 .longimg p {
+    text-align: center;
+    font-size: 15px;
+  }
+  .sub0201 .business {
+    width: 100%;
+  }
+  .sub0201 .business li {
+    flex-direction: column;
+    margin-bottom: 72px;
+  }
+  .sub0201 .business li .l {
+    width: 100%;
+    order: 3;
+  }
+  .sub0201 .business li .r {
+    width: 100%;
+  }
+  .sub0201 .business li .r h4 {
+    font-size: 21px;
+    padding-top: 0;
+  }
+  .sub0201 .business li .r .subtit {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .sub0201 .business li .r .mo {
+    text-align: center;
+  }
+  .sub0201 .business li .r .txt {
+    margin-top: 24px;
+    font-size: 15px;
+  }
+  .sub0201 .business li:nth-child(2n) .l {
+    order: 1;
+    text-align: left;
+  }
+  .sub0201 .business li:nth-child(2n) .r {
+    order: 2;
+  }
+  .sub0201 .business li:last-child {
+    margin-bottom: 0;
+  }
+  .sub0201 .business_wrap:after {
+    display: none;
+  }
+  .sub0201 .business li::before {
+    display: none;
+  }
+  .sub0201 .business li::after {
+    display: none;
+  }
+}
+.sub0202 .contact h3 {
+  font-size: 56px;
+  font-weight: 800;
+  margin-top: 96px;
+}
+.sub0202 .grid-container {
+  display: grid;
+  grid-template-columns: 5fr 7fr; /* 2열 */
+  grid-template-rows: auto auto auto; /* 3행 */
+  margin: 64px auto 32px;
+}
+.sub0202 .grid-container .item {
+  margin-bottom: 48px;
+  display: flex;
+}
+.sub0202 .grid-container .item .label {
+  font-size: 24px;
+  font-weight: 500;
+  width: 128px;
+  display: inline-block;
+}
+.sub0202 .grid-container .item .txt {
+  font-size: 32px;
+  font-weight: bold;
+  font-family: "RedHatDisplay";
+  flex: 1;
+}
+.sub0202 .grid-container .item1 {
+  grid-column: span 2;
+}
+.sub0202 .grid-container .item4 {
+  grid-column: span 2;
+  margin-bottom: 0;
+}
+.sub0202 .grid-container .item4 .txt {
+  font-family: "Pretendard";
+}
+.sub0202 .map iframe {
+  height: 520px;
+}
+
+@media (max-width: 768px) {
+  .sub0202 .contact h3 {
+    font-size: 28px;
+    margin-top: 48px;
+  }
+  .sub0202 .grid-container {
+    grid-template-columns: 1fr; /* 한 열만 */
+    grid-template-rows: auto;
+    margin: 24px auto 0;
+  }
+  .sub0202 .grid-container .item {
+    margin-bottom: 24px;
+  }
+  .sub0202 .grid-container .item .label {
+    font-size: 17px;
+    width: 88px;
+  }
+  .sub0202 .grid-container .item .txt {
+    font-size: 21px;
+  }
+  .sub0202 .grid-container .item1,
+  .sub0202 .grid-container .item4 {
+    grid-column: 1; /* 병합 해제 */
+  }
+  .sub0202 .map iframe {
+    height: 240px;
+  }
+}/*# sourceMappingURL=sub02.css.map */
